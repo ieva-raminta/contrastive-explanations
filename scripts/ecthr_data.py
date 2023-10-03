@@ -1,5 +1,6 @@
 from datasets import load_dataset
 import json
+import os
 
 ecthr_alleged = load_dataset("ecthr_cases", "alleged-violation-prediction")
 ecthr = load_dataset("ecthr_cases", "violation-prediction")
@@ -18,6 +19,7 @@ data_path = "~/contrastive-explanations/data/ecthr/"
 for split in ["train", "validation", "test"]:
     ecthr_split = ecthr_joined[split]
     # save data to jsonl files
-    with open(data_path + f"ecthr_{split}.jsonl", "w+") as f:
+    filepath = os.path.expanduser(f"{data_path}ecthr_{split}.jsonl")
+    with open(filepath, "w") as f:
         for item in ecthr_split:
             f.write(json.dumps(item) + "\n")
