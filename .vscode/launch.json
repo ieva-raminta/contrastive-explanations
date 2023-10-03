@@ -10,5 +10,11 @@
             "request": "launch",
             "command": "bash scripts/train_sequence_classification.sh",
         },
+        {
+            "name": "Train Sequence Classification MNLI",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "bash scripts/train_sequence_classification_mnli.sh",
+        },
     ]
 }
