@@ -365,8 +365,6 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
     simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims_list[i], "outcomes": test_outcomes_list[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
     simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims_list[i], "outcomes": train_outcomes_list[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
 
-    import pdb; pdb.set_trace()
-
     data_path = "~/contrastive-explanations/data/ecthr/Chalkidis/"
 
     for x,split in enumerate(["val", "test", "train"]):

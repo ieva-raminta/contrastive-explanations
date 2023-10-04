@@ -1,4 +1,4 @@
-local transformer_model = "roberta-large";
+local transformer_model = "longformer-base";
 local transformer_dim = 1024;
 
 {
@@ -13,13 +13,13 @@ local transformer_dim = 1024;
       "tokens": {
         "type": "pretrained_transformer",
         "model_name": transformer_model,
-        "max_length": 512
+        "max_length": 4096
       }
     }
   },
-  "train_data_path": "data/ecthr/Chalkidis/train.jsonl",
-  "validation_data_path": "data/ecthr/Chalkidis/dev.jsonl",
-  "test_data_path": "data/ecthr/Chalkidis/test.jsonl",
+  "train_data_path": "data/ecthr/Chalkidis/simple_train.jsonl",
+  "validation_data_path": "data/ecthr/Chalkidis/simple_val.jsonl",
+  "test_data_path": "data/ecthr/Chalkidis/simple_test.jsonl",
   evaluate_on_test: true,
   "model": {
     "type": "encoder_classifier",
@@ -28,7 +28,7 @@ local transformer_dim = 1024;
         "tokens": {
           "type": "pretrained_transformer",
           "model_name": transformer_model,
-          "max_length": 512
+          "max_length": 4096
         }
       }
     },
@@ -52,7 +52,7 @@ local transformer_dim = 1024;
     }
   },
   "trainer": {
-    "num_epochs": 20,
+    "num_epochs": 2,
     patience: 5,
     "cuda_device" : 0,
     "validation_metric": "+accuracy",
