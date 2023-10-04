@@ -348,19 +348,19 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
     test_facts, test_claims, test_outcomes, test_ids = simple_data("data/ecthr/Chalkidis/test.jsonl")
     train_facts, train_claims, train_outcomes, train_ids = simple_data("data/ecthr/Chalkidis/train.jsonl")
 
-    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims[i], "outcomes": val_outcomes[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
-    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims[i], "outcomes": test_outcomes[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
-    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims[i], "outcomes": train_outcomes[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
-
     mlb = MultiLabelBinarizer()
     train_claims, train_outcomes = binarizer(train_claims, train_outcomes, mlb, True)
     test_claims, test_outcomes = binarizer(test_claims, test_outcomes, mlb)
     val_claims, val_outcomes = binarizer(val_claims, val_outcomes, mlb)
 
+    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims[i], "outcomes": val_outcomes[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
+    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims[i], "outcomes": test_outcomes[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
+    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims[i], "outcomes": train_outcomes[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
+
     data_path = "~/contrastive-explanations/data/ecthr/Chalkidis/"
 
     for x,split in enumerate(["val", "test", "train"]):
-        filepath = os.path.expanduser(f"{data_path}ecthr_simple_{split}.jsonl")
+        filepath = os.path.expanduser(f"{data_path}simple_{split}.jsonl")
         with open(filepath, "w") as f:
             for item in [simple_val, simple_test, simple_train][x]:
                 f.write(json.dumps(item) + "\n")
