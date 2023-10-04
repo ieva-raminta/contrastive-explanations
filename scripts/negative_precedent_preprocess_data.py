@@ -344,9 +344,9 @@ def simple_data(path="dataset/dev.jsonl"):
     return all_facts, all_claims, all_outcomes, all_ids
 
 def simple_split(pretokenized_dir, tokenizer, max_len):
-    val_facts, val_claims, val_outcomes, val_ids = simple_data("ECHR/Chalkidis/dev.jsonl")
-    test_facts, test_claims, test_outcomes, test_ids = simple_data("ECHR/Chalkidis/test.jsonl")
-    train_facts, train_claims, train_outcomes, train_ids = simple_data("ECHR/Chalkidis/train.jsonl")
+    val_facts, val_claims, val_outcomes, val_ids = simple_data("data/ecthr/Chalkidis/dev.jsonl")
+    test_facts, test_claims, test_outcomes, test_ids = simple_data("data/ecthr/Chalkidis/test.jsonl")
+    train_facts, train_claims, train_outcomes, train_ids = simple_data("data/ecthr/Chalkidis/train.jsonl")
 
     mlb = MultiLabelBinarizer()
     train_claims, train_outcomes = binarizer(train_claims, train_outcomes, mlb, True)
@@ -388,13 +388,13 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
 
 def chalkidis_preprocess():
     tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
-    simple_split("ECHR/Chalkidis/legal_bert", tokenizer, 512)
+    simple_split("data/ecthr/Chalkidis/legal_bert", tokenizer, 512)
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-    simple_split("ECHR/Chalkidis/bert", tokenizer, 512)
+    simple_split("data/ecthr/Chalkidis/bert", tokenizer, 512)
     tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
-    simple_split("ECHR/Chalkidis/longformer", tokenizer, 4096)
+    simple_split("data/ecthr/Chalkidis/longformer", tokenizer, 4096)
 
 
 if __name__ == '__main__':
     chalkidis_preprocess()
-    outcome_preprocess()
+    #outcome_preprocess()
