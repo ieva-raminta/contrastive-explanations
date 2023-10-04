@@ -353,9 +353,19 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
     test_claims, test_outcomes = binarizer(test_claims, test_outcomes, mlb)
     val_claims, val_outcomes = binarizer(val_claims, val_outcomes, mlb)
 
-    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims[i], "outcomes": val_outcomes[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
-    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims[i], "outcomes": test_outcomes[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
-    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims[i], "outcomes": train_outcomes[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
+    # convert claims and outcomes to list of lists
+    train_claims_list = train_claims.tolist()
+    train_outcomes_list = train_outcomes.tolist()
+    test_claims_list = test_claims.tolist()
+    test_outcomes_list = test_outcomes.tolist()
+    val_claims_list = val_claims.tolist()
+    val_outcomes_list = val_outcomes.tolist()
+
+    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims_list[i], "outcomes": val_outcomes_list[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
+    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims_list[i], "outcomes": test_outcomes_list[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
+    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims_list[i], "outcomes": train_outcomes_list[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
+
+    import pdb; pdb.set_trace()
 
     data_path = "~/contrastive-explanations/data/ecthr/Chalkidis/"
 
