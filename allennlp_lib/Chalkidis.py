@@ -7,24 +7,38 @@ from overrides import overrides
 
 from allennlp.common.file_utils import cached_path
 from allennlp.data.dataset_readers.dataset_reader import DatasetReader
-from allennlp.data.fields import Field, TextField, LabelField, MetadataField
+from allennlp.data.fields import (
+    Field,
+    TextField,
+    LabelField,
+    MultiLabelField,
+    MetadataField,
+)
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
-from allennlp.data.tokenizers import Tokenizer, SpacyTokenizer, PretrainedTransformerTokenizer
+from allennlp.data.tokenizers import (
+    Tokenizer,
+    SpacyTokenizer,
+    PretrainedTransformerTokenizer,
+)
+
+from typing import List
 
 logger = logging.getLogger(__name__)
 
 
-@DatasetReader.register("mnli")
-class MnliReader(DatasetReader):
+@DatasetReader.register("ECtHR")
+class ECtHRReader(DatasetReader):
     """
-    Reads a file from the Stanford Natural Language Inference (SNLI) dataset.  This data is
+    Reads a file from the Stanford Natural Language Inference (ECtHR) dataset.  This data is
     formatted as jsonl, one json-formatted instance per line.  The keys in the data are
-    "gold_label", "sentence1", and "sentence2".  We convert these keys into fields named "label",
-    "premise" and "hypothesis", along with a metadata field containing the tokenized strings of the
-    premise and hypothesis.
+    "facts", "allegedly_violated_articles", and "violated_articles",
+    "silver_rationales", "gold_rationales".  We convert these keys into fields named "facts",
+    "violated_artciles" and "allegedly_violated_artciles",
+    along with a metadata field containing the tokenized strings of the
+    facts.
 
-    Registered as a `DatasetReader` with name "snli".
+    Registered as a `DatasetReader` with name "ECtHR".
 
     # Parameters
 
@@ -54,7 +68,9 @@ class MnliReader(DatasetReader):
         if combine_input_fields is not None:
             self._combine_input_fields = combine_input_fields
         else:
-            self._combine_input_fields = isinstance(self._tokenizer, PretrainedTransformerTokenizer)
+            self._combine_input_fields = isinstance(
+                self._tokenizer, PretrainedTransformerTokenizer
+            )
 
     @overrides
     def _read(self, file_path: str):
@@ -68,52 +84,53 @@ class MnliReader(DatasetReader):
             start_index = dist.get_rank()
             step_size = dist.get_world_size()
             logger.info(
-                "Reading SNLI instances %% %d from jsonl dataset at: %s", step_size, file_path
+                "Reading ECtHR instances %% %d from jsonl dataset at: %s",
+                step_size,
+                file_path,
             )
         else:
             start_index = 0
             step_size = 1
-            logger.info("Reading SNLI instances from jsonl dataset at: %s", file_path)
+            logger.info("Reading ECtHR instances from jsonl dataset at: %s", file_path)
 
-        with open(file_path, "r") as snli_file:
-            example_iter = (json.loads(line) for line in snli_file)
+        with open(file_path, "r") as ECtHR_file:
+            example_iter = (json.loads(line) for line in ECtHR_file)
             filtered_example_iter = (
                 example for example in example_iter if example["gold_label"] != "-"
             )
-            for example in itertools.islice(filtered_example_iter, start_index, None, step_size):
-                label = example["gold_label"]
-                premise = example["sentence1"]
-                hypothesis = example["sentence2"]
-                yield self.text_to_instance(premise, hypothesis, label)
+            for example in itertools.islice(
+                filtered_example_iter, start_index, None, step_size
+            ):
+                violated_articles = example["violated_articles"]
+                allegedly_violated_articles = example["allegedly_violated_articles"]
+                facts = example["facts"]
+                yield self.text_to_instance(
+                    facts, violated_articles, allegedly_violated_articles
+                )
 
     @overrides
     def text_to_instance(
         self,  # type: ignore
-        premise: str,
-        hypothesis: str,
-        label: str = None,
+        facts: List[str],
+        violated_articles: List[str],
+        allegedly_violated_artciles: List[str],
     ) -> Instance:
-
         fields: Dict[str, Field] = {}
-        premise = self._tokenizer.tokenize(premise)
-        hypothesis = self._tokenizer.tokenize(hypothesis)
+        facts = self._tokenizer.tokenize(" ".join(facts))
 
-        if self._combine_input_fields:
-            tokens = self._tokenizer.add_special_tokens(premise, hypothesis)
-            fields["tokens"] = TextField(tokens, self._token_indexers)
-        else:
-            premise_tokens = self._tokenizer.add_special_tokens(premise)
-            hypothesis_tokens = self._tokenizer.add_special_tokens(hypothesis)
-            fields["premise"] = TextField(premise_tokens, self._token_indexers)
-            fields["hypothesis"] = TextField(hypothesis_tokens, self._token_indexers)
+        facts_tokens = self._tokenizer.add_special_tokens(facts)
+        fields["facts"] = TextField(facts_tokens, self._token_indexers)
 
-            metadata = {
-                "premise_tokens": [x.text for x in premise_tokens],
-                "hypothesis_tokens": [x.text for x in hypothesis_tokens],
-            }
-            fields["metadata"] = MetadataField(metadata)
+        metadata = {
+            "facts_tokens": [x.text for x in facts_tokens],
+        }
+        fields["metadata"] = MetadataField(metadata)
 
-        if label:
-            fields["label"] = LabelField(label)
+        if violated_articles:
+            fields["violated_articles"] = MultiLabelField(violated_articles)
+        if allegedly_violated_artciles:
+            fields["allegedly_violated_artciles"] = MultiLabelField(
+                allegedly_violated_artciles
+            )
 
         return Instance(fields)
