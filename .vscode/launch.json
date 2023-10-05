@@ -16,5 +16,11 @@
             "request": "launch",
             "command": "bash scripts/train_sequence_classification_mnli.sh",
         },
+        {
+            "name": "Train Sequence Classification ECtHR",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "bash scripts/train_sequence_classification_ecthr.sh",
+        },
     ]
 }

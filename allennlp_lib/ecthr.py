@@ -27,7 +27,7 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
-@DatasetReader.register("ECtHR")
+@DatasetReader.register("ecthr")
 class ECtHRReader(DatasetReader):
     """
     Reads a file from the Stanford Natural Language Inference (ECtHR) dataset.  This data is
@@ -96,7 +96,7 @@ class ECtHRReader(DatasetReader):
         with open(file_path, "r") as ECtHR_file:
             example_iter = (json.loads(line) for line in ECtHR_file)
             filtered_example_iter = (
-                example for example in example_iter if example["gold_label"] != "-"
+                example for example in example_iter if example["claims"] != "-"
             )
             for example in itertools.islice(
                 filtered_example_iter, start_index, None, step_size
