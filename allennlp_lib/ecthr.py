@@ -32,7 +32,7 @@ class ECtHRReader(DatasetReader):
     """
     Reads a file from the Stanford Natural Language Inference (ECtHR) dataset.  This data is
     formatted as jsonl, one json-formatted instance per line.  The keys in the data are
-    "facts", "allegedly_violated_articles", and "violated_articles",
+    "facts", "claims", and "outcomes",
     "silver_rationales", "gold_rationales".  We convert these keys into fields named "facts",
     "violated_artciles" and "allegedly_violated_artciles",
     along with a metadata field containing the tokenized strings of the
@@ -101,19 +101,19 @@ class ECtHRReader(DatasetReader):
             for example in itertools.islice(
                 filtered_example_iter, start_index, None, step_size
             ):
-                violated_articles = example["violated_articles"]
-                allegedly_violated_articles = example["allegedly_violated_articles"]
+                outcomes = example["outcomes"]
+                claims = example["claims"]
                 facts = example["facts"]
                 yield self.text_to_instance(
-                    facts, violated_articles, allegedly_violated_articles
+                    facts, outcomes, claims
                 )
 
     @overrides
     def text_to_instance(
         self,  # type: ignore
         facts: List[str],
-        violated_articles: List[str],
-        allegedly_violated_artciles: List[str],
+        outcomes: List[str],
+        claims: List[str],
     ) -> Instance:
         fields: Dict[str, Field] = {}
         facts = self._tokenizer.tokenize(" ".join(facts))
@@ -126,11 +126,17 @@ class ECtHRReader(DatasetReader):
         }
         fields["metadata"] = MetadataField(metadata)
 
-        if violated_articles:
-            fields["violated_articles"] = MultiLabelField(violated_articles)
-        if allegedly_violated_artciles:
-            fields["allegedly_violated_artciles"] = MultiLabelField(
-                allegedly_violated_artciles
-            )
+        combined_label = []
+        for i, claim in enumerate(claims): 
+            if claim == 0: 
+                combined_label.append("not_claimed")
+            elif claim == 1 and outcomes[i] == 0: 
+                combined_label.append("claimed_not_violated")
+            elif claim == 1 and outcomes[i] == 1: 
+                combined_label.append("claimed_and_violated")
+
+        combined_label = MultiLabelField(combined_label)
+        
+        fields["label"] = combined_label
 
         return Instance(fields)
