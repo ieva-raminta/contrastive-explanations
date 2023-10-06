@@ -9,7 +9,7 @@ from allennlp.predictors.predictor import Predictor
 from allennlp.data.fields import MultiLabelField
 
 
-@Predictor.register("outcome_fixed")
+@Predictor.register("ecthr")
 class OutcomePredictorFixed(Predictor):
     """
     Predictor for the [`DecomposableAttention`](../models/decomposable_attention.md) model.

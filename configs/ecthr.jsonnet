@@ -22,7 +22,7 @@ local transformer_dim = 1024;
   "test_data_path": "data/ecthr/Chalkidis/simple_test.jsonl",
   evaluate_on_test: true,
   "model": {
-    "type": "encoder_classifier",
+    "type": "ecthr",
     "text_field_embedder": {
       "token_embedders": {
         "tokens": {
