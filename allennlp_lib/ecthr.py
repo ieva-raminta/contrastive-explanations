@@ -135,7 +135,7 @@ class ECtHRReader(DatasetReader):
             elif claim == 1 and outcomes[i] == 1: 
                 combined_label.append("claimed_and_violated")
 
-        combined_label = MultiLabelField(combined_label, skip_indexing=True, num_labels=3)
+        combined_label = MultiLabelField(combined_label, skip_indexing=False, num_labels=3)
         
         fields["labels"] = combined_label
 
