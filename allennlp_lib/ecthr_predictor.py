@@ -9,8 +9,8 @@ from allennlp.predictors.predictor import Predictor
 from allennlp.data.fields import MultiLabelField
 
 
-@Predictor.register("ecthr")
-class OutcomePredictorFixed(Predictor):
+@Predictor.register("multi_label")
+class MultiLabelClassifierPredictor(Predictor):
     """
     Predictor for the [`DecomposableAttention`](../models/decomposable_attention.md) model.
 
@@ -45,14 +45,14 @@ class OutcomePredictorFixed(Predictor):
         facts_text = json_dict["facts"]
         return self._dataset_reader.text_to_instance(facts_text)
 
-    @overrides
-    def predictions_to_labeled_instances(
-        self, instance: Instance, outputs: Dict[str, numpy.ndarray]
-    ) -> List[Instance]:
-        new_instance = instance.duplicate()
-        # get multiclass multilabel labels from outputs
-        labels = [numpy.argmax(output) for output in outputs["probs"]]
-        #label = numpy.argmax(outputs["probs"])
-        # Skip indexing, we have integer representations of the strings "entailment", etc.
-        new_instance.add_field("labels", MultiLabelField(labels, skip_indexing=True))
-        return [new_instance]
+    #@overrides
+    #def predictions_to_labeled_instances(
+    #    self, instance: Instance, outputs: Dict[str, numpy.ndarray]
+    #) -> List[Instance]:
+    #    new_instance = instance.duplicate()
+    #    # get multiclass multilabel labels from outputs
+    #    labels = [numpy.argmax(output) for output in outputs["probs"]]
+    #    #label = numpy.argmax(outputs["probs"])
+    #    # Skip indexing, we have integer representations of the strings "entailment", etc.
+    #    new_instance.add_field("labels", MultiLabelField(labels, skip_indexing=True))
+    #    return [new_instance]

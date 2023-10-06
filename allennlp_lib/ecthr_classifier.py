@@ -19,12 +19,12 @@ shared things:
 """
 
 
-@Model.register("ecthr")
-class ECtHRClassifier(Model):
+@Model.register("multi_label")
+class MultiLabelClassifier(Model):
     """
     This `Model` implements a basic text classifier. After embedding the text into
     a text field, we will optionally encode the embeddings with a `Seq2SeqEncoder`. The
-    resulting sequence is pooled using a `Seq2VecEncoder` and then passed to
+    resulting sequence is pooled using a `Seq2VecEncoder` and then passed tocontrastive_projection
     a linear classification layer, which projects into the label space. If a
     `Seq2SeqEncoder` is not provided, we will pass the embedded text directly to the
     `Seq2VecEncoder`.
