@@ -131,6 +131,6 @@ class ECtHRReader(DatasetReader):
                 labels.append("claimed_and_violated")
 
         for counter,label in enumerate(labels): 
-            fields["label"+str(counter)] = LabelField(label)
+            fields["label"+str(counter+1)] = LabelField(label)
 
         return Instance(fields)
