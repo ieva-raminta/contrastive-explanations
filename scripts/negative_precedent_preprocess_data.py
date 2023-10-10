@@ -361,9 +361,9 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
     val_claims_list = val_claims.tolist()
     val_outcomes_list = val_outcomes.tolist()
 
-    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims_list[i], "outcomes": val_outcomes_list[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
-    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims_list[i], "outcomes": test_outcomes_list[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
-    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims_list[i], "outcomes": train_outcomes_list[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
+    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims_list[i], "outcomes": val_outcomes_list[i], "case_no": val_ids[i]} for i in range(30)] #len(val_facts))]
+    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims_list[i], "outcomes": test_outcomes_list[i], "case_no": test_ids[i]} for i in range(30)] #len(test_facts))]
+    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims_list[i], "outcomes": train_outcomes_list[i], "case_no": train_ids[i]} for i in range(30)] #len(train_facts))]
 
     data_path = "~/contrastive-explanations/data/ecthr/Chalkidis/"
 
