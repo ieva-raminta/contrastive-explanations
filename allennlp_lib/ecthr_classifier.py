@@ -103,7 +103,7 @@ class MultiLabelClassifier(Model):
         self._threshold = threshold
         self._micro_f1 = F1MultiLabelMeasure(average="micro", threshold=self._threshold)
         self._macro_f1 = F1MultiLabelMeasure(average="macro", threshold=self._threshold)
-        self._loss = torch.nn.BCEWithLogitsLoss()
+        self._loss = torch.nn.CrossEntropyLoss(reduction='none')
         initializer(self)
 
         self._output_hidden_states = output_hidden_states
@@ -148,7 +148,8 @@ class MultiLabelClassifier(Model):
             embedded_text = self._feedforward(embedded_text)
 
         logits = self._classification_layer(embedded_text)
-        probs = torch.sigmoid(logits) #torch.nn.functional.softmax(logits, dim=-1)
+        # logits.reshape(tokens.shape[0], -1, 3)
+        probs = torch.softmax(logits, dim=-1) #torch.nn.functional.softmax(logits, dim=-1)
 
         output_dict = {"logits": logits, "probs": probs}
         if self._output_hidden_states:

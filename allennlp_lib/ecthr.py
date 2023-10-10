@@ -126,17 +126,18 @@ class ECtHRReader(DatasetReader):
         }
         fields["metadata"] = MetadataField(metadata)
 
-        combined_label = []
+        labels = []
         for i, claim in enumerate(claims): 
             if claim == 0: 
-                combined_label.append("not_claimed")
+                labels.append("not_claimed")
             elif claim == 1 and outcomes[i] == 0: 
-                combined_label.append("claimed_not_violated")
+                labels.append("claimed_not_violated")
             elif claim == 1 and outcomes[i] == 1: 
-                combined_label.append("claimed_and_violated")
+                labels.append("claimed_and_violated")
 
-        combined_label = MultiLabelField(combined_label, skip_indexing=False, num_labels=3)
-        
-        fields["labels"] = combined_label
+        fields["labels"] = MultiLabelField(labels, skip_indexing=False)
+
+        # Add a separate field for multi-class labels
+        fields["class_labels"] = MultiLabelField(labels, skip_indexing=False, num_labels=3)
 
         return Instance(fields)
