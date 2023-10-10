@@ -135,6 +135,7 @@ class ECtHRReader(DatasetReader):
             elif claim == 1 and outcomes[i] == 1: 
                 labels.append("claimed_and_violated")
 
-        fields["label"] = [LabelField(label) for label in labels]
+        for counter,label in enumerate(labels): 
+            fields["label"+str(counter)] = LabelField(label)
 
         return Instance(fields)

@@ -65,7 +65,7 @@ class ECtHRClassifier(Model):
         feedforward: Optional[FeedForward] = None,
         dropout: float = None,
         num_labels: int = None,
-        label_namespace: str = "labels",
+        label_namespace: str = "label1",
         threshold: float = 0.5,
         namespace: str = "tokens",
         initializer: InitializerApplicator = InitializerApplicator(),
@@ -124,7 +124,7 @@ class ECtHRClassifier(Model):
         self._output_hidden_states = output_hidden_states
 
     def forward(  # type: ignore
-        self, tokens: TextFieldTensors, label: torch.IntTensor = None
+        self, tokens: TextFieldTensors, label1: torch.IntTensor = None, label2: torch.IntTensor = None, label3: torch.IntTensor = None, label4: torch.IntTensor = None, label5: torch.IntTensor = None, label6: torch.IntTensor = None, label7: torch.IntTensor = None, label8: torch.IntTensor = None, label9: torch.IntTensor = None, label10: torch.IntTensor = None, label11: torch.IntTensor = None, label12: torch.IntTensor = None, label13: torch.IntTensor = None, label14: torch.IntTensor = None, label15: torch.IntTensor = None, label16: torch.IntTensor = None, label17: torch.IntTensor = None,
     ) -> Dict[str, torch.Tensor]:
 
         """
@@ -132,7 +132,7 @@ class ECtHRClassifier(Model):
 
         tokens : `TextFieldTensors`
             From a `TextField`
-        label : `torch.IntTensor`, optional (default = `None`)
+        label(n) : `torch.IntTensor`, optional (default = `None`)
             From a `LabelField`
 
         # Returns
@@ -217,14 +217,16 @@ class ECtHRClassifier(Model):
         output_dict16 = {"logits": logits16, "probs": probs16}
         output_dict17 = {"logits": logits17, "probs": probs17}
 
-        for out_dict in [output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]:
+        label_dict = {"1": label1, "2": label2, "3": label3, "4": label4, "5": label5, "6": label6, "7": label7, "8": label8, "9": label9, "10": label10, "11": label11, "12": label12, "13": label13, "14": label14, "15": label15, "16": label16, "17": label17}
+
+        for i,out_dict in enumerate([output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]):
             if self._output_hidden_states:
                 out_dict["encoded_representations"] = embedded_text
             out_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(tokens)
-            if label is not None:
-                loss = self._loss(out_dict[logits], label.long().view(-1))
+            if label1 is not None or label2 is not None or label3 is not None or label4 is not None or label5 is not None or label6 is not None or label7 is not None or label8 is not None or label9 is not None or label10 is not None or label11 is not None or label12 is not None or label13 is not None or label14 is not None or label15 is not None or label16 is not None or label17 is not None:
+                loss = self._loss(out_dict["logits"], label_dict[i].long().view(-1))
                 out_dict["loss"] = loss
-                self._accuracy(out_dict[logits], label)
+                self._accuracy(out_dict["logits"], label_dict[i])
 
         return [output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]
 
