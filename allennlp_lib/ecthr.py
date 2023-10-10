@@ -121,11 +121,6 @@ class ECtHRReader(DatasetReader):
         facts_tokens = self._tokenizer.add_special_tokens(facts)
         fields["facts"] = TextField(facts_tokens, self._token_indexers)
 
-        metadata = {
-            "facts_tokens": [x.text for x in facts_tokens],
-        }
-        fields["metadata"] = MetadataField(metadata)
-
         labels = []
         for i, claim in enumerate(claims): 
             if claim == 0: 
