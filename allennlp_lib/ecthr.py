@@ -135,9 +135,6 @@ class ECtHRReader(DatasetReader):
             elif claim == 1 and outcomes[i] == 1: 
                 labels.append("claimed_and_violated")
 
-        fields["labels"] = MultiLabelField(labels, skip_indexing=False)
-
-        # Add a separate field for multi-class labels
-        fields["class_labels"] = MultiLabelField(labels, skip_indexing=False, num_labels=3)
+        fields["label"] = [LabelField(label) for label in labels]
 
         return Instance(fields)

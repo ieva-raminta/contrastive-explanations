@@ -19,8 +19,8 @@ shared things:
 """
 
 
-@Model.register("multi_label")
-class MultiLabelClassifier(Model):
+@Model.register("ecthr")
+class ECtHRClassifier(Model):
     """
     This `Model` implements a basic text classifier. After embedding the text into
     a text field, we will optionally encode the embeddings with a `Seq2SeqEncoder`. The
@@ -98,18 +98,33 @@ class MultiLabelClassifier(Model):
             self._num_labels = num_labels
         else:
             self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
-        self._classification_layer = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer1 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer2 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer3 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer4 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer5 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer6 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer7 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer8 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer9 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer10 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer11 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer12 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer13 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer14 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer15 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer16 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer17 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
 
         self._threshold = threshold
-        self._micro_f1 = F1MultiLabelMeasure(average="micro", threshold=self._threshold)
-        self._macro_f1 = F1MultiLabelMeasure(average="macro", threshold=self._threshold)
-        self._loss = torch.nn.CrossEntropyLoss(reduction='none')
+        self._accuracy = CategoricalAccuracy()
+        self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
 
         self._output_hidden_states = output_hidden_states
 
     def forward(  # type: ignore
-        self, tokens: TextFieldTensors, labels: torch.IntTensor = None
+        self, tokens: TextFieldTensors, label: torch.IntTensor = None
     ) -> Dict[str, torch.Tensor]:
 
         """
@@ -147,23 +162,71 @@ class MultiLabelClassifier(Model):
         if self._feedforward is not None:
             embedded_text = self._feedforward(embedded_text)
 
-        logits = self._classification_layer(embedded_text)
+        logits1 = self._classification_layer1(embedded_text)
+        logits2 = self._classification_layer2(embedded_text)
+        logits3 = self._classification_layer3(embedded_text)
+        logits4 = self._classification_layer4(embedded_text)
+        logits5 = self._classification_layer5(embedded_text)
+        logits6 = self._classification_layer6(embedded_text)
+        logits7 = self._classification_layer7(embedded_text)
+        logits8 = self._classification_layer8(embedded_text)
+        logits9 = self._classification_layer9(embedded_text)
+        logits10 = self._classification_layer10(embedded_text)
+        logits11 = self._classification_layer11(embedded_text)
+        logits12 = self._classification_layer12(embedded_text)
+        logits13 = self._classification_layer13(embedded_text)
+        logits14 = self._classification_layer14(embedded_text)
+        logits15 = self._classification_layer15(embedded_text)
+        logits16 = self._classification_layer16(embedded_text)
+        logits17 = self._classification_layer17(embedded_text)
+
         # logits.reshape(tokens.shape[0], -1, 3)
-        probs = torch.softmax(logits, dim=-1) #torch.nn.functional.softmax(logits, dim=-1)
+        probs1 = torch.softmax(logits1, dim=-1) 
+        probs2 = torch.softmax(logits2, dim=-1) 
+        probs3 = torch.softmax(logits3, dim=-1) 
+        probs4 = torch.softmax(logits4, dim=-1) 
+        probs5 = torch.softmax(logits5, dim=-1) 
+        probs6 = torch.softmax(logits6, dim=-1) 
+        probs7 = torch.softmax(logits7, dim=-1) 
+        probs8 = torch.softmax(logits8, dim=-1) 
+        probs9 = torch.softmax(logits9, dim=-1) 
+        probs10 = torch.softmax(logits10, dim=-1) 
+        probs11 = torch.softmax(logits11, dim=-1) 
+        probs12 = torch.softmax(logits12, dim=-1) 
+        probs13 = torch.softmax(logits13, dim=-1) 
+        probs14 = torch.softmax(logits14, dim=-1) 
+        probs15 = torch.softmax(logits15, dim=-1) 
+        probs16 = torch.softmax(logits16, dim=-1) 
+        probs17 = torch.softmax(logits17, dim=-1) 
 
-        output_dict = {"logits": logits, "probs": probs}
-        if self._output_hidden_states:
-            output_dict["encoded_representations"] = embedded_text
-        output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(tokens)
-        if labels is not None:
-            loss = self._loss(logits, labels.float().view(-1, self._num_labels))
-            output_dict["loss"] = loss
-            cloned_logits, cloned_labels = logits.clone(), labels.clone()
-            self._micro_f1(cloned_logits, cloned_labels)
-            self._macro_f1(cloned_logits, cloned_labels)
+        output_dict1 = {"logits": logits1, "probs": probs1}
+        output_dict2 = {"logits": logits2, "probs": probs2}
+        output_dict3 = {"logits": logits3, "probs": probs3}
+        output_dict4 = {"logits": logits4, "probs": probs4}
+        output_dict5 = {"logits": logits5, "probs": probs5}
+        output_dict6 = {"logits": logits6, "probs": probs6}
+        output_dict7 = {"logits": logits7, "probs": probs7}
+        output_dict8 = {"logits": logits8, "probs": probs8}
+        output_dict9 = {"logits": logits9, "probs": probs9}
+        output_dict10 = {"logits": logits10, "probs": probs10}
+        output_dict11 = {"logits": logits11, "probs": probs11}
+        output_dict12 = {"logits": logits12, "probs": probs12}
+        output_dict13 = {"logits": logits13, "probs": probs13}
+        output_dict14 = {"logits": logits14, "probs": probs14}
+        output_dict15 = {"logits": logits15, "probs": probs15}
+        output_dict16 = {"logits": logits16, "probs": probs16}
+        output_dict17 = {"logits": logits17, "probs": probs17}
 
+        for out_dict in [output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]:
+            if self._output_hidden_states:
+                out_dict["encoded_representations"] = embedded_text
+            out_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(tokens)
+            if label is not None:
+                loss = self._loss(out_dict[logits], label.long().view(-1))
+                out_dict["loss"] = loss
+                self._accuracy(out_dict[logits], label)
 
-        return output_dict
+        return [output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]
 
     @overrides
     def make_output_human_readable(
@@ -179,22 +242,13 @@ class MultiLabelClassifier(Model):
         else:
             predictions_list = [predictions]
         classes = []
-
         for prediction in predictions_list:
-            # Because this is multi-label, we need all indices where the prediction prob crossed
-            # the threshold (if any)...
-            label_indices = torch.nonzero(prediction >= self._threshold, as_tuple=True)
-            if label_indices:
-                label_indices = label_indices[0].tolist()
-            else:
-                label_indices = []
-            # ...and every prediction is a list of strings as opposed to a single string
-            label_strings = [
-                self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(idx, str(idx))
-                for idx in label_indices
-            ]
-            classes.append(label_strings)
-
+            label_idx = prediction.argmax(dim=-1).item()
+            label_str = self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(
+                label_idx, str(label_idx)
+            )
+            classes.append(label_str)
+        output_dict["label"] = classes
         tokens = []
         for instance_tokens in output_dict["token_ids"]:
             tokens.append(
@@ -203,23 +257,11 @@ class MultiLabelClassifier(Model):
                     for token_id in instance_tokens
                 ]
             )
-
         output_dict["tokens"] = tokens
-        output_dict["labels"] = classes
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        micro = self._micro_f1.get_metric(reset)
-        macro = self._macro_f1.get_metric(reset)
-
-        metrics = {
-            "micro_precision": micro["precision"],
-            "micro_recall": micro["recall"],
-            "micro_fscore": micro["fscore"],
-            "macro_precision": macro["precision"],
-            "macro_recall": macro["recall"],
-            "macro_fscore": macro["fscore"],
-        }
+        metrics = {"accuracy": self._accuracy.get_metric(reset)}
         return metrics
 
-    default_predictor = "multi_label"
+    default_predictor = "ecthr"
