@@ -124,7 +124,7 @@ class ECtHRClassifier(Model):
         self._output_hidden_states = output_hidden_states
 
     def forward(  # type: ignore
-        self, tokens: TextFieldTensors, label1: torch.IntTensor = None, label2: torch.IntTensor = None, label3: torch.IntTensor = None, label4: torch.IntTensor = None, label5: torch.IntTensor = None, label6: torch.IntTensor = None, label7: torch.IntTensor = None, label8: torch.IntTensor = None, label9: torch.IntTensor = None, label10: torch.IntTensor = None, label11: torch.IntTensor = None, label12: torch.IntTensor = None, label13: torch.IntTensor = None, label14: torch.IntTensor = None, label15: torch.IntTensor = None, label16: torch.IntTensor = None, label17: torch.IntTensor = None,
+        self, facts: TextFieldTensors, label1: torch.IntTensor = None, label2: torch.IntTensor = None, label3: torch.IntTensor = None, label4: torch.IntTensor = None, label5: torch.IntTensor = None, label6: torch.IntTensor = None, label7: torch.IntTensor = None, label8: torch.IntTensor = None, label9: torch.IntTensor = None, label10: torch.IntTensor = None, label11: torch.IntTensor = None, label12: torch.IntTensor = None, label13: torch.IntTensor = None, label14: torch.IntTensor = None, label15: torch.IntTensor = None, label16: torch.IntTensor = None, label17: torch.IntTensor = None,
     ) -> Dict[str, torch.Tensor]:
 
         """
@@ -148,8 +148,8 @@ class ECtHRClassifier(Model):
             - `loss` : (`torch.FloatTensor`, optional) :
                 A scalar loss to be optimised.
         """
-        embedded_text = self._text_field_embedder(tokens)
-        mask = get_text_field_mask(tokens)
+        embedded_text = self._text_field_embedder(facts)
+        mask = get_text_field_mask(facts)
 
         if self._seq2seq_encoder:
             embedded_text = self._seq2seq_encoder(embedded_text, mask=mask)
