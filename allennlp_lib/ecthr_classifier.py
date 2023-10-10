@@ -218,18 +218,22 @@ class ECtHRClassifier(Model):
         output_dict17 = {"logits": logits17, "probs": probs17}
 
         label_dict = {"1": label1, "2": label2, "3": label3, "4": label4, "5": label5, "6": label6, "7": label7, "8": label8, "9": label9, "10": label10, "11": label11, "12": label12, "13": label13, "14": label14, "15": label15, "16": label16, "17": label17}
+        output_dict = {}
+        loss = 0
 
         for i,out_dict in enumerate([output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]):
             if self._output_hidden_states:
-                out_dict["encoded_representations"] = embedded_text
-            out_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(tokens)
-            if label1 is not None or label2 is not None or label3 is not None or label4 is not None or label5 is not None or label6 is not None or label7 is not None or label8 is not None or label9 is not None or label10 is not None or label11 is not None or label12 is not None or label13 is not None or label14 is not None or label15 is not None or label16 is not None or label17 is not None:
-                loss = self._loss(out_dict["logits"], label_dict[i].long().view(-1))
-                out_dict["loss"] = loss
-                self._accuracy(out_dict["logits"], label_dict[i])
+                output_dict["encoded_representations"] = embedded_text
+            output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
+            if label_dict[i] is not None:
+                loss += self._loss(out_dict["logits"], label_dict[i].long().view(-1))
+                output_dict["accuracy"] += self._accuracy(out_dict["logits"], label_dict[i])
+        output_dict["loss"] = loss
+        output_dict["accuracy"] /= len(label_dict)
+        self._accuracy = output_dict["accuracy"]
 
-        return [output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]
-
+        return output_dict
+    
     @overrides
     def make_output_human_readable(
         self, output_dict: Dict[str, torch.Tensor]
