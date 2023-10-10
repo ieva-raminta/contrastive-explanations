@@ -52,7 +52,7 @@ local transformer_dim = 1024;
     }
   },
   "trainer": {
-    "num_epochs": 20,
+    "num_epochs": 2,
     patience: 5,
     "cuda_device" : 0,
     "validation_metric": "+accuracy",
