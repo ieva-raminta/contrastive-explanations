@@ -48,7 +48,7 @@ local transformer_dim = 768;
   "data_loader": {
     "batch_sampler": {
       "type": "bucket",
-      "batch_size" : 2
+      "batch_size" : 1
     }
   },
   "trainer": {
