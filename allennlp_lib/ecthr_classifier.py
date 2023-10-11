@@ -64,7 +64,7 @@ class ECtHRClassifier(Model):
         seq2seq_encoder: Seq2SeqEncoder = None,
         feedforward: Optional[FeedForward] = None,
         dropout: float = None,
-        num_labels: int = None,
+        num_labels: int = 3,
         label_namespace: str = "label1",
         threshold: float = 0.5,
         namespace: str = "tokens",
