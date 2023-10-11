@@ -1,19 +1,19 @@
 local transformer_model = "allenai/longformer-base-4096";
-local transformer_dim = 1024;
+local transformer_dim = 768;
 
 {
   "dataset_reader": {
     "type": "ecthr",
     "tokenizer": {
-      "type": "LongformerTokenizer",
+      "type": "pretrained_transformer",
       "model_name": transformer_model,
-      "add_special_tokens": false
+      "add_special_tokens": false,
     },
     "token_indexers": {
       "tokens": {
-        "type": "LongformerTokenizer",
+        "type": "pretrained_transformer",
         "model_name": transformer_model,
-        "max_length": 4096
+        "max_length": 4096,
       }
     }
   },
@@ -26,9 +26,9 @@ local transformer_dim = 1024;
     "text_field_embedder": {
       "token_embedders": {
         "tokens": {
-          "type": "LongformerTokenizer",
+          "type": "pretrained_transformer",
           "model_name": transformer_model,
-          "max_length": 4096
+          "max_length": 4096,
         }
       }
     },
