@@ -217,7 +217,7 @@ class ECtHRClassifier(Model):
         output_dict16 = {"logits": logits16, "probs": probs16}
         output_dict17 = {"logits": logits17, "probs": probs17}
 
-        label_dict = {"1": label1, "2": label2, "3": label3, "4": label4, "5": label5, "6": label6, "7": label7, "8": label8, "9": label9, "10": label10, "11": label11, "12": label12, "13": label13, "14": label14, "15": label15, "16": label16, "17": label17}
+        label_dict = {1: label1, 2: label2, 3: label3, 4: label4, 5: label5, 6: label6, 7: label7, 8: label8, 9: label9, 10: label10, 11: label11, 12: label12, 13: label13, 14: label14, 15: label15, 16: label16, 17: label17}
         output_dict = {}
         loss = 0
 
