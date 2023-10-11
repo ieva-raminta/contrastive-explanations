@@ -219,7 +219,7 @@ class ECtHRClassifier(Model):
 
         label_dict = {1: label1, 2: label2, 3: label3, 4: label4, 5: label5, 6: label6, 7: label7, 8: label8, 9: label9, 10: label10, 11: label11, 12: label12, 13: label13, 14: label14, 15: label15, 16: label16, 17: label17}
         output_dict = {}
-        loss = 0
+        total_loss = 0
         all_logits = []
         all_labels = []
 
@@ -228,10 +228,11 @@ class ECtHRClassifier(Model):
                 output_dict["encoded_representations"] = embedded_text
             output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
             if label_dict[i+1] is not None:
-                loss += self._loss(out_dict["logits"], label_dict[i+1].long().view(-1))
+                loss = self._loss(out_dict["logits"], label_dict[i+1].long().view(-1))
+                total_loss += loss
                 all_logits.append(out_dict["logits"])
                 all_labels.append(label_dict[i+1])
-        output_dict["loss"] = loss
+        output_dict["loss"] = total_loss
         self._accuracy(out_dict["logits"], label_dict[i+1])
 
         return output_dict
