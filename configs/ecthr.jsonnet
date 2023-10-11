@@ -5,13 +5,13 @@ local transformer_dim = 1024;
   "dataset_reader": {
     "type": "ecthr",
     "tokenizer": {
-      "type": "pretrained_transformer",
+      "type": "LongformerTokenizer",
       "model_name": transformer_model,
       "add_special_tokens": false
     },
     "token_indexers": {
       "tokens": {
-        "type": "pretrained_transformer",
+        "type": "LongformerTokenizer",
         "model_name": transformer_model,
         "max_length": 4096
       }
@@ -26,7 +26,7 @@ local transformer_dim = 1024;
     "text_field_embedder": {
       "token_embedders": {
         "tokens": {
-          "type": "pretrained_transformer",
+          "type": "LongformerTokenizer",
           "model_name": transformer_model,
           "max_length": 4096
         }
