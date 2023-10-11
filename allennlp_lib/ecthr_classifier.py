@@ -228,7 +228,7 @@ class ECtHRClassifier(Model):
             output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
             if label_dict[i+1] is not None:
                 loss += self._loss(out_dict["logits"], label_dict[i+1].long().view(-1))
-                output_dict["accuracy"] += self._accuracy(out_dict["logits"], label_dict[i])
+                output_dict["accuracy"] += self._accuracy(out_dict["logits"], label_dict[i+1])
         output_dict["loss"] = loss
         output_dict["accuracy"] /= len(label_dict)
         self._accuracy = output_dict["accuracy"]
