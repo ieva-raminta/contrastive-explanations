@@ -220,6 +220,7 @@ class ECtHRClassifier(Model):
         label_dict = {1: label1, 2: label2, 3: label3, 4: label4, 5: label5, 6: label6, 7: label7, 8: label8, 9: label9, 10: label10, 11: label11, 12: label12, 13: label13, 14: label14, 15: label15, 16: label16, 17: label17}
         output_dict = {}
         loss = 0
+        output_dict["accuracy"] = 0
 
         for i,out_dict in enumerate([output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]):
             if self._output_hidden_states:
