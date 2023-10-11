@@ -225,8 +225,8 @@ class ECtHRClassifier(Model):
             if self._output_hidden_states:
                 output_dict["encoded_representations"] = embedded_text
             output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
-            if label_dict[i] is not None:
-                loss += self._loss(out_dict["logits"], label_dict[i].long().view(-1))
+            if label_dict[i+1] is not None:
+                loss += self._loss(out_dict["logits"], label_dict[i+1].long().view(-1))
                 output_dict["accuracy"] += self._accuracy(out_dict["logits"], label_dict[i])
         output_dict["loss"] = loss
         output_dict["accuracy"] /= len(label_dict)
