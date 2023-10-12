@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+TOKENIZERS_PARALLELISM=false
+
 for DATASET in ecthr; do
 #    MODEL_PATH_BASE="../contrastive/s3-link/clean"
     MODEL_PATH="experiments/models/${DATASET}/allenai/longformer-base-4096"
