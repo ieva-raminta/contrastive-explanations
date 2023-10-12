@@ -233,7 +233,7 @@ class ECtHRClassifier(Model):
                 all_logits.append(out_dict["logits"])
                 all_labels.append(label_dict[i+1])
         output_dict["loss"] = total_loss
-        self._accuracy(out_dict["logits"], label_dict[i+1])
+        self._accuracy(all_logi)
 
         return output_dict
     
