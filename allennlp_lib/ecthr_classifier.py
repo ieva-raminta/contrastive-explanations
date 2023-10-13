@@ -5,7 +5,12 @@ import torch
 
 from allennlp.data import TextFieldTensors, Vocabulary
 from allennlp.models.model import Model
-from allennlp.modules import FeedForward, Seq2SeqEncoder, Seq2VecEncoder, TextFieldEmbedder
+from allennlp.modules import (
+    FeedForward,
+    Seq2SeqEncoder,
+    Seq2VecEncoder,
+    TextFieldEmbedder,
+)
 from allennlp.nn import InitializerApplicator, util
 from allennlp.nn.util import get_text_field_mask
 from allennlp.training.metrics import CategoricalAccuracy
@@ -71,7 +76,6 @@ class ECtHRClassifier(Model):
         initializer: InitializerApplicator = InitializerApplicator(),
         **kwargs,
     ) -> None:
-
         super().__init__(vocab, **kwargs)
         self._text_field_embedder = text_field_embedder
 
@@ -98,23 +102,57 @@ class ECtHRClassifier(Model):
             self._num_labels = num_labels
         else:
             self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
-        self._classification_layer1 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer2 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer3 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer4 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer5 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer6 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer7 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer8 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer9 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer10 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer11 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer12 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer13 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer14 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer15 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer16 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
-        self._classification_layer17 = torch.nn.Linear(self._classifier_input_dim, self._num_labels)
+        self._classification_layer1 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer2 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer3 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer4 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer5 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer6 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer7 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer8 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer9 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer10 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer11 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer12 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer13 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer14 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer15 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer16 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
+        self._classification_layer17 = torch.nn.Linear(
+            self._classifier_input_dim, self._num_labels
+        )
 
         self._threshold = threshold
         self._accuracy = CategoricalAccuracy()
@@ -123,10 +161,30 @@ class ECtHRClassifier(Model):
 
         self._output_hidden_states = output_hidden_states
 
-    def forward(  # type: ignore
-        self, facts: TextFieldTensors, label1: torch.IntTensor = None, label2: torch.IntTensor = None, label3: torch.IntTensor = None, label4: torch.IntTensor = None, label5: torch.IntTensor = None, label6: torch.IntTensor = None, label7: torch.IntTensor = None, label8: torch.IntTensor = None, label9: torch.IntTensor = None, label10: torch.IntTensor = None, label11: torch.IntTensor = None, label12: torch.IntTensor = None, label13: torch.IntTensor = None, label14: torch.IntTensor = None, label15: torch.IntTensor = None, label16: torch.IntTensor = None, label17: torch.IntTensor = None,
-    ) -> Dict[str, torch.Tensor]:
+    def merge_masks(self, mask1: torch.Tensor, mask2: torch.Tensor) -> torch.Tensor:
+        return mask1 * (mask2 + 1)
 
+    def forward(  # type: ignore
+        self,
+        facts: TextFieldTensors,
+        label1: torch.IntTensor = None,
+        label2: torch.IntTensor = None,
+        label3: torch.IntTensor = None,
+        label4: torch.IntTensor = None,
+        label5: torch.IntTensor = None,
+        label6: torch.IntTensor = None,
+        label7: torch.IntTensor = None,
+        label8: torch.IntTensor = None,
+        label9: torch.IntTensor = None,
+        label10: torch.IntTensor = None,
+        label11: torch.IntTensor = None,
+        label12: torch.IntTensor = None,
+        label13: torch.IntTensor = None,
+        label14: torch.IntTensor = None,
+        label15: torch.IntTensor = None,
+        label16: torch.IntTensor = None,
+        label17: torch.IntTensor = None,
+    ) -> Dict[str, torch.Tensor]:
         """
         # Parameters
 
@@ -154,10 +212,14 @@ class ECtHRClassifier(Model):
         if self._seq2seq_encoder:
             embedded_text = self._seq2seq_encoder(embedded_text, mask=mask)
 
-        global_attention_mask = torch.zeros(facts.shape, dtype=torch.long, device=self.device)
+        global_attention_mask = torch.zeros(
+            facts.shape, dtype=torch.long, device=self.device
+        )
         global_attention_mask[:, [0]] = 1
 
-        embedded_text = self._seq2vec_encoder(embedded_text, mask=mask, global_attention_mask=global_attention_mask)
+        attention_mask = self.merge_masks(mask, global_attention_mask)
+
+        embedded_text = self._seq2vec_encoder(embedded_text, mask=attention_mask)
 
         if self._dropout:
             embedded_text = self._dropout(embedded_text)
@@ -184,23 +246,23 @@ class ECtHRClassifier(Model):
         logits17 = self._classification_layer17(embedded_text)
 
         # logits.reshape(tokens.shape[0], -1, 3)
-        probs1 = torch.softmax(logits1, dim=-1) 
-        probs2 = torch.softmax(logits2, dim=-1) 
-        probs3 = torch.softmax(logits3, dim=-1) 
-        probs4 = torch.softmax(logits4, dim=-1) 
-        probs5 = torch.softmax(logits5, dim=-1) 
-        probs6 = torch.softmax(logits6, dim=-1) 
-        probs7 = torch.softmax(logits7, dim=-1) 
-        probs8 = torch.softmax(logits8, dim=-1) 
-        probs9 = torch.softmax(logits9, dim=-1) 
-        probs10 = torch.softmax(logits10, dim=-1) 
-        probs11 = torch.softmax(logits11, dim=-1) 
-        probs12 = torch.softmax(logits12, dim=-1) 
-        probs13 = torch.softmax(logits13, dim=-1) 
-        probs14 = torch.softmax(logits14, dim=-1) 
-        probs15 = torch.softmax(logits15, dim=-1) 
-        probs16 = torch.softmax(logits16, dim=-1) 
-        probs17 = torch.softmax(logits17, dim=-1) 
+        probs1 = torch.softmax(logits1, dim=-1)
+        probs2 = torch.softmax(logits2, dim=-1)
+        probs3 = torch.softmax(logits3, dim=-1)
+        probs4 = torch.softmax(logits4, dim=-1)
+        probs5 = torch.softmax(logits5, dim=-1)
+        probs6 = torch.softmax(logits6, dim=-1)
+        probs7 = torch.softmax(logits7, dim=-1)
+        probs8 = torch.softmax(logits8, dim=-1)
+        probs9 = torch.softmax(logits9, dim=-1)
+        probs10 = torch.softmax(logits10, dim=-1)
+        probs11 = torch.softmax(logits11, dim=-1)
+        probs12 = torch.softmax(logits12, dim=-1)
+        probs13 = torch.softmax(logits13, dim=-1)
+        probs14 = torch.softmax(logits14, dim=-1)
+        probs15 = torch.softmax(logits15, dim=-1)
+        probs16 = torch.softmax(logits16, dim=-1)
+        probs17 = torch.softmax(logits17, dim=-1)
 
         output_dict1 = {"logits": logits1, "probs": probs1}
         output_dict2 = {"logits": logits2, "probs": probs2}
@@ -220,26 +282,66 @@ class ECtHRClassifier(Model):
         output_dict16 = {"logits": logits16, "probs": probs16}
         output_dict17 = {"logits": logits17, "probs": probs17}
 
-        label_dict = {1: label1, 2: label2, 3: label3, 4: label4, 5: label5, 6: label6, 7: label7, 8: label8, 9: label9, 10: label10, 11: label11, 12: label12, 13: label13, 14: label14, 15: label15, 16: label16, 17: label17}
+        label_dict = {
+            1: label1,
+            2: label2,
+            3: label3,
+            4: label4,
+            5: label5,
+            6: label6,
+            7: label7,
+            8: label8,
+            9: label9,
+            10: label10,
+            11: label11,
+            12: label12,
+            13: label13,
+            14: label14,
+            15: label15,
+            16: label16,
+            17: label17,
+        }
         output_dict = {}
         total_loss = 0
         all_logits = []
         all_labels = []
 
-        for i,out_dict in enumerate([output_dict1, output_dict2, output_dict3, output_dict4, output_dict5, output_dict6, output_dict7, output_dict8, output_dict9, output_dict10, output_dict11, output_dict12, output_dict13, output_dict14, output_dict15, output_dict16, output_dict17]):
+        for i, out_dict in enumerate(
+            [
+                output_dict1,
+                output_dict2,
+                output_dict3,
+                output_dict4,
+                output_dict5,
+                output_dict6,
+                output_dict7,
+                output_dict8,
+                output_dict9,
+                output_dict10,
+                output_dict11,
+                output_dict12,
+                output_dict13,
+                output_dict14,
+                output_dict15,
+                output_dict16,
+                output_dict17,
+            ]
+        ):
             if self._output_hidden_states:
                 output_dict["encoded_representations"] = embedded_text
             output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
-            if label_dict[i+1] is not None:
-                loss = self._loss(out_dict["logits"], label_dict[i+1].long().view(-1))
+            if label_dict[i + 1] is not None:
+                loss = self._loss(out_dict["logits"], label_dict[i + 1].long().view(-1))
                 total_loss += loss
                 all_logits.append(out_dict["logits"])
-                all_labels.append(label_dict[i+1])
+                all_labels.append(label_dict[i + 1])
         output_dict["loss"] = total_loss
-        self._accuracy(torch.cat(all_logits).to("cuda"), torch.cat(all_labels).to("cuda"))
+        self._accuracy(
+            torch.cat(all_logits).to("cuda"), torch.cat(all_labels).to("cuda")
+        )
 
         return output_dict
-    
+
     @overrides
     def make_output_human_readable(
         self, output_dict: Dict[str, torch.Tensor]
@@ -256,16 +358,18 @@ class ECtHRClassifier(Model):
         classes = []
         for prediction in predictions_list:
             label_idx = prediction.argmax(dim=-1).item()
-            label_str = self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(
-                label_idx, str(label_idx)
-            )
+            label_str = self.vocab.get_index_to_token_vocabulary(
+                self._label_namespace
+            ).get(label_idx, str(label_idx))
             classes.append(label_str)
         output_dict["label"] = classes
         tokens = []
         for instance_tokens in output_dict["token_ids"]:
             tokens.append(
                 [
-                    self.vocab.get_token_from_index(token_id.item(), namespace=self._namespace)
+                    self.vocab.get_token_from_index(
+                        token_id.item(), namespace=self._namespace
+                    )
                     for token_id in instance_tokens
                 ]
             )
