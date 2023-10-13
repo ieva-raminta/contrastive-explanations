@@ -213,7 +213,7 @@ class ECtHRClassifier(Model):
             embedded_text = self._seq2seq_encoder(embedded_text, mask=mask)
 
         global_attention_mask = torch.zeros(
-            facts.shape, dtype=torch.long, device=self.device
+            facts["tokens"]["mask"].shape, dtype=torch.long, device="cuda"
         )
         global_attention_mask[:, [0]] = 1
 
