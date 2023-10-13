@@ -64,7 +64,7 @@ local transformer_dim = 768;
       "type": "huggingface_adamw",
       "lr": 2e-6,
       "weight_decay": 0.1,
-    }
+    },
     "use_amp": true,
   }
 }
