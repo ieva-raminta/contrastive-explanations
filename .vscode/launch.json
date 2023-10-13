@@ -21,6 +21,11 @@
             "type": "node-terminal",
             "request": "launch",
             "command": "bash scripts/train_sequence_classification_ecthr.sh",
+        },        {
+            "name": "Train Sequence Classification ECtHR HPC",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "bash scripts/train_sequence_classification_ecthr_hpc.sh",
         },
     ]
 }

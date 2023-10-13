@@ -154,7 +154,10 @@ class ECtHRClassifier(Model):
         if self._seq2seq_encoder:
             embedded_text = self._seq2seq_encoder(embedded_text, mask=mask)
 
-        embedded_text = self._seq2vec_encoder(embedded_text, mask=mask)
+        global_attention_mask = torch.zeros(facts.shape, dtype=torch.long, device=self.device)
+        global_attention_mask[:, [0]] = 1
+
+        embedded_text = self._seq2vec_encoder(embedded_text, mask=mask, global_attention_mask=global_attention_mask)
 
         if self._dropout:
             embedded_text = self._dropout(embedded_text)
