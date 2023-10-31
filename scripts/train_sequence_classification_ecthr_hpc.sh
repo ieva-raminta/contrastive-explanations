@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+export 'PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:21'
 TOKENIZERS_PARALLELISM=false
 
 for DATASET in ecthr; do

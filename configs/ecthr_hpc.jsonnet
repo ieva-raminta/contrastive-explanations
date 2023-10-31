@@ -52,7 +52,7 @@ local transformer_dim = 768;
     }
   },
   "trainer": {
-    "num_epochs": 2,
+    "num_epochs": 5,
     patience: 5,
     #"cuda_device" : 0,
     "validation_metric": "+accuracy",
@@ -69,5 +69,9 @@ local transformer_dim = 768;
   },
   "distributed": {
     "cuda_devices": [0, 1, 2, 3],
+    "ddp_accelerator": {
+      "type": "torch",
+      "find_unused_parameters": true
+    }, 
   },
-  
+}  

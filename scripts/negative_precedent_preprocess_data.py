@@ -373,6 +373,8 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
             for item in [simple_val, simple_test, simple_train][x]:
                 f.write(json.dumps(item) + "\n")
 
+    import pdb; pdb.set_trace()
+
     print(
         f"{'split':^9} | {'claims':^9} | {'positives':^9} | {'negatives':^9}")
     training = data_stats(train_claims, train_outcomes, "train")

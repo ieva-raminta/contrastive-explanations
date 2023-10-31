@@ -13,7 +13,8 @@ from allennlp.data.fields import (
     LabelField,
     MultiLabelField,
     MetadataField,
-)
+    ListField,
+    )
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import (
@@ -21,6 +22,7 @@ from allennlp.data.tokenizers import (
     SpacyTokenizer,
     PretrainedTransformerTokenizer,
 )
+import torch
 
 from typing import List
 
@@ -116,7 +118,7 @@ class ECtHRReader(DatasetReader):
         claims: List[str],
     ) -> Instance:
         fields: Dict[str, Field] = {}
-        facts = self._tokenizer.tokenize(" ".join(facts))
+        facts = self._tokenizer.tokenize(" ".join(facts)[:50000])
 
         facts_tokens = self._tokenizer.add_special_tokens(facts)
         fields["facts"] = TextField(facts_tokens, self._token_indexers)
@@ -130,7 +132,6 @@ class ECtHRReader(DatasetReader):
             elif claim == 1 and outcomes[i] == 1: 
                 labels.append("claimed_and_violated")
 
-        for counter,label in enumerate(labels): 
-            fields["label"+str(counter+1)] = LabelField(label)
+        fields["labels"] = ListField([LabelField(label) for label in labels])
 
         return Instance(fields)

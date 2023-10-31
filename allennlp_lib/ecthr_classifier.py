@@ -66,23 +66,16 @@ class ECtHRClassifier(Model):
         text_field_embedder: TextFieldEmbedder,
         seq2vec_encoder: Seq2VecEncoder,
         output_hidden_states: bool = False,
-        seq2seq_encoder: Seq2SeqEncoder = None,
         feedforward: Optional[FeedForward] = None,
         dropout: float = None,
         num_labels: int = 3,
-        label_namespace: str = "label1",
-        threshold: float = 0.5,
+        label_namespace: str = "labels",
         namespace: str = "tokens",
         initializer: InitializerApplicator = InitializerApplicator(),
         **kwargs,
     ) -> None:
         super().__init__(vocab, **kwargs)
         self._text_field_embedder = text_field_embedder
-
-        if seq2seq_encoder:
-            self._seq2seq_encoder = seq2seq_encoder
-        else:
-            self._seq2seq_encoder = None
 
         self._seq2vec_encoder = seq2vec_encoder
         self._feedforward = feedforward
@@ -102,59 +95,8 @@ class ECtHRClassifier(Model):
             self._num_labels = num_labels
         else:
             self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
-        self._classification_layer1 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer2 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer3 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer4 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer5 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer6 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer7 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer8 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer9 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer10 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer11 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer12 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer13 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer14 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer15 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer16 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
-        self._classification_layer17 = torch.nn.Linear(
-            self._classifier_input_dim, self._num_labels
-        )
+        self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
 
-        self._threshold = threshold
         self._accuracy = CategoricalAccuracy()
         self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
@@ -167,23 +109,7 @@ class ECtHRClassifier(Model):
     def forward(  # type: ignore
         self,
         facts: TextFieldTensors,
-        label1: torch.IntTensor = None,
-        label2: torch.IntTensor = None,
-        label3: torch.IntTensor = None,
-        label4: torch.IntTensor = None,
-        label5: torch.IntTensor = None,
-        label6: torch.IntTensor = None,
-        label7: torch.IntTensor = None,
-        label8: torch.IntTensor = None,
-        label9: torch.IntTensor = None,
-        label10: torch.IntTensor = None,
-        label11: torch.IntTensor = None,
-        label12: torch.IntTensor = None,
-        label13: torch.IntTensor = None,
-        label14: torch.IntTensor = None,
-        label15: torch.IntTensor = None,
-        label16: torch.IntTensor = None,
-        label17: torch.IntTensor = None,
+        labels: torch.Tensor = None,
     ) -> Dict[str, torch.Tensor]:
         """
         # Parameters
@@ -206,11 +132,9 @@ class ECtHRClassifier(Model):
             - `loss` : (`torch.FloatTensor`, optional) :
                 A scalar loss to be optimised.
         """
-        embedded_text = self._text_field_embedder(facts)
-        mask = get_text_field_mask(facts)
 
-        if self._seq2seq_encoder:
-            embedded_text = self._seq2seq_encoder(embedded_text, mask=mask)
+        embedded_text = self._text_field_embedder(facts, gradient_checkpointing=True)
+        mask = get_text_field_mask(facts)
 
         global_attention_mask = torch.zeros(
             facts["tokens"]["mask"].shape, dtype=torch.long, device="cuda"
@@ -227,119 +151,19 @@ class ECtHRClassifier(Model):
         if self._feedforward is not None:
             embedded_text = self._feedforward(embedded_text)
 
-        logits1 = self._classification_layer1(embedded_text)
-        logits2 = self._classification_layer2(embedded_text)
-        logits3 = self._classification_layer3(embedded_text)
-        logits4 = self._classification_layer4(embedded_text)
-        logits5 = self._classification_layer5(embedded_text)
-        logits6 = self._classification_layer6(embedded_text)
-        logits7 = self._classification_layer7(embedded_text)
-        logits8 = self._classification_layer8(embedded_text)
-        logits9 = self._classification_layer9(embedded_text)
-        logits10 = self._classification_layer10(embedded_text)
-        logits11 = self._classification_layer11(embedded_text)
-        logits12 = self._classification_layer12(embedded_text)
-        logits13 = self._classification_layer13(embedded_text)
-        logits14 = self._classification_layer14(embedded_text)
-        logits15 = self._classification_layer15(embedded_text)
-        logits16 = self._classification_layer16(embedded_text)
-        logits17 = self._classification_layer17(embedded_text)
+        logits = self._classification_layer(embedded_text)
 
         # logits.reshape(tokens.shape[0], -1, 3)
-        probs1 = torch.softmax(logits1, dim=-1)
-        probs2 = torch.softmax(logits2, dim=-1)
-        probs3 = torch.softmax(logits3, dim=-1)
-        probs4 = torch.softmax(logits4, dim=-1)
-        probs5 = torch.softmax(logits5, dim=-1)
-        probs6 = torch.softmax(logits6, dim=-1)
-        probs7 = torch.softmax(logits7, dim=-1)
-        probs8 = torch.softmax(logits8, dim=-1)
-        probs9 = torch.softmax(logits9, dim=-1)
-        probs10 = torch.softmax(logits10, dim=-1)
-        probs11 = torch.softmax(logits11, dim=-1)
-        probs12 = torch.softmax(logits12, dim=-1)
-        probs13 = torch.softmax(logits13, dim=-1)
-        probs14 = torch.softmax(logits14, dim=-1)
-        probs15 = torch.softmax(logits15, dim=-1)
-        probs16 = torch.softmax(logits16, dim=-1)
-        probs17 = torch.softmax(logits17, dim=-1)
+        probs = torch.softmax(logits, dim=-1)
 
-        output_dict1 = {"logits": logits1, "probs": probs1}
-        output_dict2 = {"logits": logits2, "probs": probs2}
-        output_dict3 = {"logits": logits3, "probs": probs3}
-        output_dict4 = {"logits": logits4, "probs": probs4}
-        output_dict5 = {"logits": logits5, "probs": probs5}
-        output_dict6 = {"logits": logits6, "probs": probs6}
-        output_dict7 = {"logits": logits7, "probs": probs7}
-        output_dict8 = {"logits": logits8, "probs": probs8}
-        output_dict9 = {"logits": logits9, "probs": probs9}
-        output_dict10 = {"logits": logits10, "probs": probs10}
-        output_dict11 = {"logits": logits11, "probs": probs11}
-        output_dict12 = {"logits": logits12, "probs": probs12}
-        output_dict13 = {"logits": logits13, "probs": probs13}
-        output_dict14 = {"logits": logits14, "probs": probs14}
-        output_dict15 = {"logits": logits15, "probs": probs15}
-        output_dict16 = {"logits": logits16, "probs": probs16}
-        output_dict17 = {"logits": logits17, "probs": probs17}
-
-        label_dict = {
-            1: label1,
-            2: label2,
-            3: label3,
-            4: label4,
-            5: label5,
-            6: label6,
-            7: label7,
-            8: label8,
-            9: label9,
-            10: label10,
-            11: label11,
-            12: label12,
-            13: label13,
-            14: label14,
-            15: label15,
-            16: label16,
-            17: label17,
-        }
-        output_dict = {}
-        total_loss = 0
-        all_logits = []
-        all_labels = []
-
-        for i, out_dict in enumerate(
-            [
-                output_dict1,
-                output_dict2,
-                output_dict3,
-                output_dict4,
-                output_dict5,
-                output_dict6,
-                output_dict7,
-                output_dict8,
-                output_dict9,
-                output_dict10,
-                output_dict11,
-                output_dict12,
-                output_dict13,
-                output_dict14,
-                output_dict15,
-                output_dict16,
-                output_dict17,
-            ]
-        ):
-            if self._output_hidden_states:
-                output_dict["encoded_representations"] = embedded_text
-            output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
-            if label_dict[i + 1] is not None:
-                loss = self._loss(out_dict["logits"], label_dict[i + 1].long().view(-1))
-                total_loss += loss
-                all_logits.append(out_dict["logits"])
-                all_labels.append(label_dict[i + 1])
-        output_dict["loss"] = total_loss
-        self._accuracy(
-            torch.cat(all_logits).to("cuda"), torch.cat(all_labels).to("cuda")
-        )
-
+        output_dict = {"logits": logits, "probs": probs}
+        if self._output_hidden_states:
+            output_dict["encoded_representations"] = embedded_text
+        output_dict["token_ids"] = util.get_token_ids_from_text_field_tensors(facts)
+        if labels is not None:
+            loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
+            output_dict["loss"] = loss
+        self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
         return output_dict
 
     @overrides
