@@ -151,7 +151,8 @@ class ECtHRClassifier(Model):
         if self._feedforward is not None:
             embedded_text = self._feedforward(embedded_text)
 
-        logits = self._classification_layer(embedded_text)
+        logits = self._classification_layer(embedded_text).to("cuda")
+        labels = labels.to("cuda")
 
         # logits.reshape(tokens.shape[0], -1, 3)
         probs = torch.softmax(logits, dim=-1)
