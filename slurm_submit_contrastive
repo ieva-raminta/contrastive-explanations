@@ -12,7 +12,7 @@
 #! Name of the job:
 #SBATCH -J contrastive-train 
 #! Which project should be charged (NB Wilkes2 projects end in '-GPU'):
-#SBATCH -A VLACHOS-SL4-GPU 
+#SBATCH -A VLACHOS-SL3-GPU 
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
 #! How many (MPI) tasks will there be in total?
@@ -55,14 +55,14 @@ module load rhel8/default-amp              # REQUIRED - loads the basic environm
 
 module load python/3.8
 module load anaconda 
-source .bashrc
-conda activate contrastive
+source /home/irs38/.bashrc
+conda activate /home/irs38/.conda/envs/contrastive
 
 #! Full path to application executable: 
 application="/home/irs38/contrastive-explanations/scripts/train_sequence_classification_ecthr_hpc.sh"
 
 #! Run options for the application:
-options=">output_contrastive 2> errors_contrastive"
+options=">output_contrastive_sl3_0611_advice 2> errors_contrastive_sl3_0611_advice"
 
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the directory
