@@ -163,7 +163,7 @@ class ECtHRClassifier(Model):
         if labels is not None:
             loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
             output_dict["loss"] = loss
-        self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
+        self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda")).to("cuda")
         return output_dict
 
     @overrides
