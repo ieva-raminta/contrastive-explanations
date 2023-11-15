@@ -62,7 +62,7 @@ conda activate /home/irs38/.conda/envs/contrastive
 application="/home/irs38/contrastive-explanations/scripts/train_sequence_classification_ecthr_hpc.sh"
 
 #! Run options for the application:
-options=">output_contrastive_sl3_0611_advice 2> errors_contrastive_sl3_0611_advice"
+options=">output_contrastive_sl3_0611_docker 2> errors_contrastive_sl3_0611_docker"
 
 #! Work directory (i.e. where the job will run):
 workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the directory
