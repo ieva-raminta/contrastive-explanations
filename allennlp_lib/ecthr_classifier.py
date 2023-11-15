@@ -151,8 +151,7 @@ class ECtHRClassifier(Model):
         if self._feedforward is not None:
             embedded_text = self._feedforward(embedded_text)
 
-        logits = self._classification_layer(embedded_text).to("cuda")
-        labels = labels.to("cuda")
+        logits = self._classification_layer(embedded_text)
 
         # logits.reshape(tokens.shape[0], -1, 3)
         probs = torch.softmax(logits, dim=-1)
@@ -164,7 +163,7 @@ class ECtHRClassifier(Model):
         if labels is not None:
             loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
             output_dict["loss"] = loss
-        self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda")).to("cuda")
+        self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
         return output_dict
 
     @overrides
