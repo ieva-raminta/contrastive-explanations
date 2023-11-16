@@ -69,9 +69,9 @@ local transformer_dim = 768;
   },
   "distributed": {
     "cuda_devices": [0, 1, 2, 3],
-    "ddp_accelerator": {
-      "type": "torch",
-      "find_unused_parameters": true
-    }, 
+    #"ddp_accelerator": {
+    #  "type": "torch",
+    #  "find_unused_parameters": true
+    #}, 
   },
 }  
