@@ -14,5 +14,5 @@ for DATASET in ecthr; do
 #    mkdir ${MODEL_PATH}/encodings
 #    find ${MODEL_PATH} -name "*.th" -delete
 
-    python scripts/cache_linear_classifier.py --model-path=${MODEL_PATH}
+    python3 scripts/cache_linear_classifier.py --model-path=${MODEL_PATH}
 done
