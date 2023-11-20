@@ -104,7 +104,7 @@ class ECtHRClassifier(Model):
         self._output_hidden_states = output_hidden_states
 
     def merge_masks(self, mask1: torch.Tensor, mask2: torch.Tensor) -> torch.Tensor:
-        return mask1 * (mask2 + 1)
+        return mask1.to(mask1.get_device()) * (mask2 + 1)
 
     def forward(  # type: ignore
         self,
