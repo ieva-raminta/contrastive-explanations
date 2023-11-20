@@ -114,8 +114,8 @@ class ECtHRReader(DatasetReader):
     def text_to_instance(
         self,  # type: ignore
         facts: List[str],
-        outcomes: List[str],
-        claims: List[str],
+        outcomes: List[str] = None,
+        claims: List[str] = None,
     ) -> Instance:
         fields: Dict[str, Field] = {}
         facts = self._tokenizer.tokenize(" ".join(facts)[:50000])
