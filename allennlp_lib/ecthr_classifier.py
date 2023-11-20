@@ -104,7 +104,7 @@ class ECtHRClassifier(Model):
         self._output_hidden_states = output_hidden_states
 
     def merge_masks(self, mask1: torch.Tensor, mask2: torch.Tensor) -> torch.Tensor:
-        return mask1.to(mask1.get_device()) * (mask2 + 1)
+        return mask1.to(mask2.get_device()) * (mask2 + 1)
 
     def forward(  # type: ignore
         self,
@@ -181,11 +181,9 @@ class ECtHRClassifier(Model):
             predictions_list = [predictions]
         classes = []
         for prediction in predictions_list:
-            label_idx = prediction.argmax(dim=-1).item()
-            label_str = self.vocab.get_index_to_token_vocabulary(
-                self._label_namespace
-            ).get(label_idx, str(label_idx))
-            classes.append(label_str)
+            label_idxs = [p.argmax(dim=-1).item() for p in prediction.reshape([-1,3])]
+            label_strs = [self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(label_idx, str(label_idx)) for label_idx in label_idxs]
+        classes = label_strs
         output_dict["label"] = classes
         tokens = []
         for instance_tokens in output_dict["token_ids"]:
