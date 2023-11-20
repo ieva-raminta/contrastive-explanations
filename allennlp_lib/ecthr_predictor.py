@@ -43,7 +43,9 @@ class ECtHRPredictor(Predictor):
         Expects JSON that looks like `{"facts": "...", }`.
         """
         facts_text = json_dict["facts"]
-        return self._dataset_reader.text_to_instance(facts_text)
+        outcomes = json_dict["outcomes"]
+        claims = json_dict["claims"]
+        return self._dataset_reader.text_to_instance(facts_text, outcomes, claims)
 
     @overrides
     def predictions_to_labeled_instances(
