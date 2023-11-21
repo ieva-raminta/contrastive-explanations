@@ -7,6 +7,7 @@ from allennlp.common.util import JsonDict
 from allennlp.data import Instance
 from allennlp.predictors.predictor import Predictor
 from allennlp.data.fields import MultiLabelField, LabelField
+from allennlp.common.util import JsonDict, sanitize
 
 
 @Predictor.register("ecthr")
@@ -34,8 +35,15 @@ class ECtHRPredictor(Predictor):
         """
         return self.predict_json({"facts": facts})
 
-    # def predict_json(self, js: JsonDict) -> JsonDict:
-    #     return self.predict_json(js)
+    @overrides
+    def predict_json(self, inputs: JsonDict) -> JsonDict:
+        instance = self._json_to_instance(inputs)
+        return self.predict_instance(instance)
+
+    @overrides
+    def predict_instance(self, instance: Instance) -> JsonDict:
+        outputs = self._model.forward_on_instance(instance)
+        return sanitize(outputs)
 
     @overrides
     def _json_to_instance(self, json_dict: JsonDict) -> Instance:
