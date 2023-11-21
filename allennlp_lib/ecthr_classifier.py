@@ -248,7 +248,7 @@ class ECtHRClassifier(Model):
             label_idxs = [p.argmax(dim=-1).item() for p in prediction.reshape([-1,3])]
             label_strs = [self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(label_idx, str(label_idx)) for label_idx in label_idxs]
         classes = label_strs
-        output_dict["labels"] = classes
+        output_dict["labels"] = [classes]
         tokens = []
         for instance_tokens in output_dict["token_ids"]:
             tokens.append(
