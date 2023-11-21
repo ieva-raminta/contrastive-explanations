@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 from overrides import overrides
 import torch
+import numpy
 
 from allennlp.data import TextFieldTensors, Vocabulary
 from allennlp.models.model import Model
@@ -11,6 +12,10 @@ from allennlp.modules import (
     Seq2VecEncoder,
     TextFieldEmbedder,
 )
+from typing import Dict, List, Set, Type, Optional, Union
+from allennlp.data import Instance, Vocabulary
+from allennlp.data.batch import Batch
+
 from allennlp.nn import InitializerApplicator, util
 from allennlp.nn.util import get_text_field_mask
 from allennlp.training.metrics import CategoricalAccuracy
@@ -167,12 +172,71 @@ class ECtHRClassifier(Model):
         return output_dict
 
     @overrides
+    def forward_on_instance(self, instance: Instance) -> Dict[str, numpy.ndarray]:
+        """
+        Takes an [`Instance`](../data/instance.md), which typically has raw text in it, converts
+        that text into arrays using this model's [`Vocabulary`](../data/vocabulary.md), passes those
+        arrays through `self.forward()` and `self.make_output_human_readable()` (which by default
+        does nothing) and returns the result.  Before returning the result, we convert any
+        `torch.Tensors` into numpy arrays and remove the batch dimension.
+        """
+        return self.forward_on_instances([instance])[0]
+
+    @overrides
+    def forward_on_instances(self, instances: List[Instance]) -> List[Dict[str, numpy.ndarray]]:
+        """
+        Takes a list of `Instances`, converts that text into arrays using this model's `Vocabulary`,
+        passes those arrays through `self.forward()` and `self.make_output_human_readable()` (which
+        by default does nothing) and returns the result.  Before returning the result, we convert
+        any `torch.Tensors` into numpy arrays and separate the batched output into a list of
+        individual dicts per instance. Note that typically this will be faster on a GPU (and
+        conditionally, on a CPU) than repeated calls to `forward_on_instance`.
+
+        # Parameters
+
+        instances : `List[Instance]`, required
+            The instances to run the model on.
+
+        # Returns
+
+        A list of the models output for each instance.
+        """
+        batch_size = len(instances)
+        with torch.no_grad():
+            cuda_device = self._get_prediction_device()
+            dataset = Batch(instances)
+            dataset.index_instances(self.vocab)
+            model_input = util.move_to_device(dataset.as_tensor_dict(), cuda_device)
+            outputs = self.make_output_human_readable(self(**model_input))
+
+            instance_separated_output: List[Dict[str, numpy.ndarray]] = [
+                {} for _ in dataset.instances
+            ]
+            for name, output in list(outputs.items()):
+                if isinstance(output, torch.Tensor):
+                    # NOTE(markn): This is a hack because 0-dim pytorch tensors are not iterable.
+                    # This occurs with batch size 1, because we still want to include the loss in that case.
+                    if output.dim() == 0:
+                        output = output.unsqueeze(0)
+
+                    if output.size(0) != batch_size:
+                        self._maybe_warn_for_unseparable_batches(name)
+                        continue
+                    output = output.detach().cpu().numpy()
+                elif len(output) != batch_size:
+                    self._maybe_warn_for_unseparable_batches(name)
+                    continue
+                for instance_output, batch_element in zip(instance_separated_output, output):
+                    instance_output[name] = batch_element
+            return instance_separated_output
+
+    @overrides
     def make_output_human_readable(
         self, output_dict: Dict[str, torch.Tensor]
     ) -> Dict[str, torch.Tensor]:
         """
         Does a simple argmax over the probabilities, converts index to string label, and
-        add `"label"` key to the dictionary with the result.
+        add `"labels"` key to the dictionary with the result.
         """
         predictions = output_dict["probs"]
         if predictions.dim() == 2:
@@ -184,7 +248,7 @@ class ECtHRClassifier(Model):
             label_idxs = [p.argmax(dim=-1).item() for p in prediction.reshape([-1,3])]
             label_strs = [self.vocab.get_index_to_token_vocabulary(self._label_namespace).get(label_idx, str(label_idx)) for label_idx in label_idxs]
         classes = label_strs
-        output_dict["label"] = classes
+        output_dict["labels"] = [classes]
         tokens = []
         for instance_tokens in output_dict["token_ids"]:
             tokens.append(
