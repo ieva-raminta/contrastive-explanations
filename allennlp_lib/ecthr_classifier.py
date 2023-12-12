@@ -103,6 +103,7 @@ class ECtHRClassifier(Model):
         self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
 
         self._accuracy = CategoricalAccuracy()
+        self._f1 = F1MultiLabelMeasure()
         self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
 
@@ -169,6 +170,7 @@ class ECtHRClassifier(Model):
             loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
             output_dict["loss"] = loss
         self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
+        self._f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
         return output_dict
 
     @overrides
@@ -263,7 +265,7 @@ class ECtHRClassifier(Model):
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        metrics = {"accuracy": self._accuracy.get_metric(reset)}
+        metrics = {"accuracy": self._accuracy.get_metric(reset), "f1": self._f1.get_metric(reset)}
         return metrics
 
     default_predictor = "ecthr"
