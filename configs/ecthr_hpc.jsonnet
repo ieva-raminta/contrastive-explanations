@@ -39,10 +39,10 @@ local transformer_dim = 768;
     "feedforward": {
       "input_dim": transformer_dim,
       "num_layers": 1,
-      "hidden_dims": transformer_dim,
+      "hidden_dims": 200,
       "activations": "tanh"
     },
-    "dropout": 0.1,
+    "dropout": 0.3,
     "namespace": "tags"
   },
   "data_loader": {
@@ -62,7 +62,7 @@ local transformer_dim = 768;
     },
     "optimizer": {
       "type": "huggingface_adamw",
-      "lr": 2e-6,
+      "lr": 3e-5,
       "weight_decay": 0.1,
     },
     "use_amp": true,
