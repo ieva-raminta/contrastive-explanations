@@ -55,7 +55,7 @@ local transformer_dim = 768;
     "num_epochs": 5,
     patience: 5,
     #"cuda_device" : 0,
-    "validation_metric": "+accuracy",
+    "validation_metric": "+loss",
     "learning_rate_scheduler": {
       "type": "slanted_triangular",
       "cut_frac": 0.06
