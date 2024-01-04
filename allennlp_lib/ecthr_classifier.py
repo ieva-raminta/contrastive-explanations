@@ -170,7 +170,6 @@ class ECtHRClassifier(Model):
             loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
             output_dict["loss"] = loss
         self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
-        import pdb; pdb.set_trace()
         self._f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
         return output_dict
 
