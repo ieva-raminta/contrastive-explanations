@@ -19,7 +19,7 @@ from allennlp.data.batch import Batch
 from allennlp.nn import InitializerApplicator, util
 from allennlp.nn.util import get_text_field_mask
 from allennlp.training.metrics import CategoricalAccuracy
-from allennlp.training.metrics.fbeta_multi_label_measure import F1MultiLabelMeasure
+from allennlp.training.metrics.fbeta_multi_label_measure import F1Measure
 
 """
 shared things:
@@ -103,7 +103,7 @@ class ECtHRClassifier(Model):
         self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
 
         self._accuracy = CategoricalAccuracy()
-        self._f1 = F1MultiLabelMeasure()
+        self._f1 = F1Measure(0)
         self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
 
@@ -170,6 +170,7 @@ class ECtHRClassifier(Model):
             loss = self._loss(output_dict["logits"].reshape([-1,3]), labels.long().view(-1)) 
             output_dict["loss"] = loss
         self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
+        import pdb; pdb.set_trace()
         self._f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
         return output_dict
 
