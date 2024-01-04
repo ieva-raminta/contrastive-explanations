@@ -19,7 +19,7 @@ from allennlp.data.batch import Batch
 from allennlp.nn import InitializerApplicator, util
 from allennlp.nn.util import get_text_field_mask
 from allennlp.training.metrics import CategoricalAccuracy
-from allennlp.training.metrics.fbeta_multi_label_measure import F1Measure
+from allennlp.training.metrics import F1Measure
 
 """
 shared things:
