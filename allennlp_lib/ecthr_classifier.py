@@ -103,7 +103,7 @@ class ECtHRClassifier(Model):
         self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
 
         self._accuracy = CategoricalAccuracy()
-        self._f1 = FBetaMeasure("micro")
+        self._f1 = FBetaMeasure()
         self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
 
