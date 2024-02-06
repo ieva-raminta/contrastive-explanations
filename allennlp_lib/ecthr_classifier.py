@@ -269,7 +269,7 @@ class ECtHRClassifier(Model):
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        metrics = {"accuracy": self._accuracy.get_metric(reset), "micro_f1": self._micro_f1.get_metric(reset)["f1-measures"], "macro_f1": self._macro_f1.get_metric(reset)["f1-measures"], "weighted_f1": self._weighted_f1.get_metric(reset)["f1-measures"]}
+        metrics = {"accuracy": self._accuracy.get_metric(reset), "micro_f1": self._micro_f1.get_metric(reset)["fscore"], "macro_f1": self._macro_f1.get_metric(reset)["fscore"], "weighted_f1": self._weighted_f1.get_metric(reset)["fscore"]}
         return metrics
 
     default_predictor = "ecthr"
