@@ -103,7 +103,9 @@ class ECtHRClassifier(Model):
         self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
 
         self._accuracy = CategoricalAccuracy()
-        self._f1 = FBetaMeasure()
+        self._micro_f1 = FBetaMeasure(beta=1.0, average="micro")
+        self._macro_f1 = FBetaMeasure(beta=1.0, average="macro")
+        self._weighted_f1 = FBetaMeasure(beta=1.0, average="weighted")
         self._loss = torch.nn.CrossEntropyLoss()
         initializer(self)
 
@@ -265,7 +267,7 @@ class ECtHRClassifier(Model):
         return output_dict
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
-        metrics = {"accuracy": self._accuracy.get_metric(reset), "f1": self._f1.get_metric(reset)}
+        metrics = {"accuracy": self._accuracy.get_metric(reset), "micro_f1": self._micro_f1.get_metric(reset)["f1-measures"], "macro_f1": self._macro_f1.get_metric(reset)["f1-measures"], "weighted_f1": self._weighted_f1.get_metric(reset)["f1-measures"]}
         return metrics
 
     default_predictor = "ecthr"
