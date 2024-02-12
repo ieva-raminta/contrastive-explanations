@@ -20,6 +20,7 @@ from allennlp.nn import InitializerApplicator, util
 from allennlp.nn.util import get_text_field_mask
 from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.training.metrics.fbeta_measure import FBetaMeasure
+from allennlp.training.metrics import F1Measure
 
 """
 shared things:
@@ -107,6 +108,9 @@ class ECtHRClassifier(Model):
         self._macro_f1 = FBetaMeasure(beta=1.0, average="macro")
         self._weighted_f1 = FBetaMeasure(beta=1.0, average="weighted")
         self._loss = torch.nn.CrossEntropyLoss()
+        self._f1_0 = F1Measure(0)
+        self._f1_1 = F1Measure(1)
+        self._f1_2 = F1Measure(2)
         initializer(self)
 
         self._output_hidden_states = output_hidden_states
@@ -174,7 +178,10 @@ class ECtHRClassifier(Model):
         self._accuracy(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))
         self._micro_f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
         self._macro_f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
-        self._weighted_f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))        
+        self._weighted_f1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))  
+        self._f1_0(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))              
+        self._f1_1(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))              
+        self._f1_2(torch.cat([logits]).reshape([-1,3]).to("cuda"), torch.cat([labels]).long().view(-1).to("cuda"))              
         return output_dict
 
     @overrides
