@@ -310,11 +310,11 @@ def text_preprocessing(text):
 
 def outcome_preprocess():
     tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
-    get_data("ECHR/Outcome/legal_bert", tokenizer, 512)
+    get_data("data/ecthr/outcome/legal_bert", tokenizer, 512)
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-    get_data("ECHR/Outcome/bert", tokenizer, 512)
+    get_data("data/ecthr/outcome/bert", tokenizer, 512)
     tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
-    get_data("ECHR/Outcome/longformer", tokenizer, 4096)
+    get_data("data/ecthr/outcome/longformer", tokenizer, 4096)
 
 def get_allowed(arts):
     allowed = ['10', '11', '13', '14', '18', '2', '3', '4', '5', '6', '7', '8', '9', 'P1-1', 'P4-2', 'P7-1', 'P7-4']
@@ -417,4 +417,4 @@ def chalkidis_preprocess():
 
 if __name__ == '__main__':
     chalkidis_preprocess()
-    #outcome_preprocess()
+    outcome_preprocess()
