@@ -75,9 +75,9 @@ def get_data(pretokenized_dir, tokenizer, max_len):
         all_outcomes = []
         all_ids = []
 
-        for item in tqdm(os.listdir("ECHR/Outcome/"+case_path)):
+        for item in tqdm(os.listdir("data/ecthr/outcome/"+case_path)):
             if item.endswith('.json'):
-                with open(os.path.join("ECHR/Outcome/"+case_path, item), "r") as json_file:
+                with open(os.path.join("data/ecthr/outcome/"+case_path, item), "r") as json_file:
                     data = json.load(json_file)
                     try:
                         alleged_arguments = data["text"].split("THE LAW")[1].split("FOR THESE REASONS, THE COURT UNANIMOUSLY")[0].lower()
@@ -102,7 +102,7 @@ def get_data(pretokenized_dir, tokenizer, max_len):
                     data['claim'] = claims
                     data['arguments'] = argument
 
-                with open(os.path.join('ECHR/Outcome/'+out, item), "w") as out_file:
+                with open(os.path.join('data/ecthr/outcome/'+out, item), "w") as out_file:
                     json.dump(data, out_file, indent=1)
 
                 if len(claims) > 0:
@@ -416,5 +416,5 @@ def chalkidis_preprocess():
 
 
 if __name__ == '__main__':
-    chalkidis_preprocess()
+    #chalkidis_preprocess()
     outcome_preprocess()
