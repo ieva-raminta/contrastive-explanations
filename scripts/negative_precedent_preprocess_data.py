@@ -213,27 +213,47 @@ def split_dataset(pretokenized_dir, tokenizer, max_len, dataset_ids, dataset_fac
         for j in i:
             print(j)
 
-    print('Tokenizing data...')
+    #print('Tokenizing data...')
 
     Path(pretokenized_dir).mkdir(parents=True, exist_ok=True)
 
-    train_facts, train_masks = preprocessing_for_bert(train_facts, tokenizer, max=max_len)
-    train_arguments, train_masks_arguments = preprocessing_for_bert(train_arguments, tokenizer, max=max_len)
+    #train_facts, train_masks = preprocessing_for_bert(train_facts, tokenizer, max=max_len)
+    #train_arguments, train_masks_arguments = preprocessing_for_bert(train_arguments, tokenizer, max=max_len)
 
-    with open(pretokenized_dir + "/tokenized_train.pkl", "wb") as f:
-        pickle.dump([train_facts, train_masks, train_arguments, train_masks_arguments, train_ids, train_claims, train_outcomes, mlb], f, protocol=4)
+    #with open(pretokenized_dir + "/tokenized_train.pkl", "wb") as f:
+    #    pickle.dump([train_facts, train_masks, train_arguments, train_masks_arguments, train_ids, train_claims, train_outcomes, mlb], f, protocol=4)
 
-    val_facts, val_masks = preprocessing_for_bert(val_facts, tokenizer, max=max_len)
-    val_arguments, val_masks_arguments = preprocessing_for_bert(val_arguments, tokenizer, max=max_len)
+    #val_facts, val_masks = preprocessing_for_bert(val_facts, tokenizer, max=max_len)
+    #val_arguments, val_masks_arguments = preprocessing_for_bert(val_arguments, tokenizer, max=max_len)
 
-    with open(pretokenized_dir + "/tokenized_dev.pkl", "wb") as f:
-        pickle.dump([val_facts, val_masks, val_arguments, val_masks_arguments, val_ids, val_claims, val_outcomes, mlb], f, protocol=4)
+    #with open(pretokenized_dir + "/tokenized_dev.pkl", "wb") as f:
+    #    pickle.dump([val_facts, val_masks, val_arguments, val_masks_arguments, val_ids, val_claims, val_outcomes, mlb], f, protocol=4)
 
-    test_facts, test_masks = preprocessing_for_bert(test_facts, tokenizer, max=max_len)
-    test_arguments, test_masks_arguments = preprocessing_for_bert(test_arguments, tokenizer, max=max_len)
+    #test_facts, test_masks = preprocessing_for_bert(test_facts, tokenizer, max=max_len)
+    #test_arguments, test_masks_arguments = preprocessing_for_bert(test_arguments, tokenizer, max=max_len)
 
-    with open(pretokenized_dir + "/tokenized_test.pkl", "wb") as f:
-        pickle.dump([test_facts, test_masks, test_arguments, test_masks_arguments, test_ids, test_claims, test_outcomes, mlb], f, protocol=4)
+    #with open(pretokenized_dir + "/tokenized_test.pkl", "wb") as f:
+    #    pickle.dump([test_facts, test_masks, test_arguments, test_masks_arguments, test_ids, test_claims, test_outcomes, mlb], f, protocol=4)
+
+    train_claims_list = train_claims.tolist()
+    train_outcomes_list = train_outcomes.tolist()
+    test_claims_list = test_claims.tolist()
+    test_outcomes_list = test_outcomes.tolist()
+    val_claims_list = val_claims.tolist()
+    val_outcomes_list = val_outcomes.tolist()
+
+    simple_val = [{"facts": " ".join(val_facts[i]), "claims": val_claims_list[i], "outcomes": val_outcomes_list[i], "case_no": val_ids[i]} for i in range(len(val_facts))]
+    simple_test = [{"facts": " ".join(test_facts[i]), "claims": test_claims_list[i], "outcomes": test_outcomes_list[i], "case_no": test_ids[i]} for i in range(len(test_facts))]
+    simple_train = [{"facts": " ".join(train_facts[i]), "claims": train_claims_list[i], "outcomes": train_outcomes_list[i], "case_no": train_ids[i]} for i in range(len(train_facts))]
+
+    data_path = "~/contrastive-explanations/data/ecthr/outcome/"
+
+    for x,split in enumerate(["val", "test", "train"]):
+        filepath = os.path.expanduser(f"{data_path}simple_{split}.jsonl")
+        with open(filepath, "w") as f:
+            for item in [simple_val, simple_test, simple_train][x]:
+                f.write(json.dumps(item) + "\n")
+
 
     return train_ids, train_facts, train_claims, train_outcomes
 
@@ -343,10 +363,10 @@ def simple_data(path="dataset/dev.jsonl"):
 
     return all_facts, all_claims, all_outcomes, all_ids
 
-def simple_split(pretokenized_dir, tokenizer, max_len):
-    val_facts, val_claims, val_outcomes, val_ids = simple_data("data/ecthr/Chalkidis/dev.jsonl")
-    test_facts, test_claims, test_outcomes, test_ids = simple_data("data/ecthr/Chalkidis/test.jsonl")
-    train_facts, train_claims, train_outcomes, train_ids = simple_data("data/ecthr/Chalkidis/train.jsonl")
+def simple_split(pretokenized_dir, tokenizer, max_len, chalkidis_or_outcome):
+    val_facts, val_claims, val_outcomes, val_ids = simple_data("data/ecthr/"+chalkidis_or_outcome+"/dev.jsonl")
+    test_facts, test_claims, test_outcomes, test_ids = simple_data("data/ecthr/"+chalkidis_or_outcome+"/test.jsonl")
+    train_facts, train_claims, train_outcomes, train_ids = simple_data("data/ecthr/"+chalkidis_or_outcome+"/train.jsonl")
 
     mlb = MultiLabelBinarizer()
     train_claims, train_outcomes = binarizer(train_claims, train_outcomes, mlb, True)
@@ -407,12 +427,12 @@ def simple_split(pretokenized_dir, tokenizer, max_len):
             f, protocol=4)
 
 def chalkidis_preprocess():
-    tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
-    simple_split("data/ecthr/Chalkidis/legal_bert", tokenizer, 512)
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-    simple_split("data/ecthr/Chalkidis/bert", tokenizer, 512)
+    #tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
+    #simple_split("data/ecthr/Chalkidis/legal_bert", tokenizer, 512, "Chalkidis")
+    #tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+    #simple_split("data/ecthr/Chalkidis/bert", tokenizer, 512, "Chalkidis")
     tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
-    simple_split("data/ecthr/Chalkidis/longformer", tokenizer, 4096)
+    simple_split("data/ecthr/Chalkidis/longformer", tokenizer, 4096, "Chalkidis")
 
 
 if __name__ == '__main__':
