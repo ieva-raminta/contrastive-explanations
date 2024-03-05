@@ -101,7 +101,7 @@ class ECtHRClassifier(Model):
             self._num_labels = num_labels
         else:
             self._num_labels = vocab.get_vocab_size(namespace=self._label_namespace)
-        self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 17* self._num_labels)
+        self._classification_layer = torch.nn.Linear(self._classifier_input_dim, 14* self._num_labels) # 17 for chalkidis, 14 for outcome data
 
         self._accuracy = CategoricalAccuracy()
         self._micro_f1 = FBetaMeasure(beta=1.0, average="micro")
