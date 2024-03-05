@@ -17,9 +17,9 @@ local transformer_dim = 768;
       }
     }
   },
-  "train_data_path": "data/ecthr/Chalkidis/simple_train.jsonl",
-  "validation_data_path": "data/ecthr/Chalkidis/simple_val.jsonl",
-  "test_data_path": "data/ecthr/Chalkidis/simple_test.jsonl",
+  "train_data_path": "data/ecthr/outcome/simple_train.jsonl",
+  "validation_data_path": "data/ecthr/outcome/simple_val.jsonl",
+  "test_data_path": "data/ecthr/outcome/simple_test.jsonl",
   evaluate_on_test: true,
   "model": {
     "type": "ecthr",
