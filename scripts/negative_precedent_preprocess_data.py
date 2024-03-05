@@ -309,10 +309,10 @@ def text_preprocessing(text):
     return text
 
 def outcome_preprocess():
-    tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
-    get_data("data/ecthr/outcome/legal_bert", tokenizer, 512)
-    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
-    get_data("data/ecthr/outcome/bert", tokenizer, 512)
+    #tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
+    #get_data("data/ecthr/outcome/legal_bert", tokenizer, 512)
+    #tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
+    #get_data("data/ecthr/outcome/bert", tokenizer, 512)
     tokenizer = LongformerTokenizer.from_pretrained('allenai/longformer-base-4096')
     get_data("data/ecthr/outcome/longformer", tokenizer, 4096)
 
