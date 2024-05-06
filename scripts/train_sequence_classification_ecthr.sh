@@ -15,7 +15,7 @@ for config_file in 3e-5_0.4_300 3e-6_0.2_50 3e-6_0.2_100 3e-6_0.2_200 3e-6_0.2_3
 #    mkdir ${MODEL_PATH}/encodings
 #    find ${MODEL_PATH} -name "*.th" -delete
 
-    python3 scripts/cache_linear_classifier.py --model-path=${MODEL_PATH}
+    python3 scripts/cache_linear_classifier.py --model-path=${MODEL_PATH} --include-package=allennlp_lib
 
     cp experiments/models/ecthr/allenai/longformer-base-4096/out.log ${config_file}.txt
 done
