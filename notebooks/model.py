@@ -116,4 +116,4 @@ class BertClassifier(nn.Module):
             logits_aux = self.classifier_aux(last_hidden_state_cls)
             return logits, logits_aux
 
-        return logits
+        return logits, last_hidden_state_cls
