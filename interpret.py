@@ -18,6 +18,8 @@ from torch.utils.data import TensorDataset, DataLoader, RandomSampler, Sequentia
 import json 
 from pprint import pprint
 import random 
+from scipy.stats import spearmanr
+from scipy.stats import kendalltau
 
 torch.manual_seed(123)
 np.random.seed(123)
@@ -29,6 +31,9 @@ model.eval()
 model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/legal_bert"
+
+def flatten_list(l):
+    return [item for sublist in l for item in sublist]
 
 def make_loader(input, mask, labels, claims, train=True):
     labels = torch.tensor(labels)
@@ -116,25 +121,12 @@ for id,ex in zip(ids, exs):
 interesting_label_options = ["claimed_and_violated", "claimed_not_violated"]
 index2label = {0: "not_claimed", 1: "claimed_and_violated", 2: "claimed_not_violated"}
 
-ids_to_rationales = {}
-for id,rationale in zip(ids, silver_rationales):
-    ids_to_rationales[id] = rationale
-ids_to_ex = {}
-for id,ex in zip(ids, exs):
-    ids_to_ex[id] = ex
-
-
+dev_rationales = []
+dev_attributions_per_sentence = []
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
     claims = b_claims
-    gold_id = b_labels 
-
-    D_out = int(b_labels.shape[1] / 2)
-    y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
-    y[b_labels[:, :D_out].bool()] = 1
-    y[b_labels[:, D_out:].bool()] = 2
-    y = y.squeeze(1).squeeze().tolist()
-
+    gold = b_labels 
     if ";" not in val_ids[i]:
         gold_id = val_ids[i]
     else:
@@ -143,34 +135,58 @@ for i,item in enumerate(dev_data):
                 gold_id = id
                 break
 
-    ref_token_id = tokenizer.pad_token_id
-    cls_token_id = tokenizer.cls_token_id
-    sep_token_id = tokenizer.sep_token_id
-    ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
-    ref = torch.tensor([ref_input_ids], device="cuda")
+    rationale = ids_to_rationales[gold_id]
 
-    article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
+    if rationale not in ["[]", []]: 
+            
+        D_out = int(b_labels.shape[1] / 2)
+        y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
+        y[b_labels[:, :D_out].bool()] = 1
+        y[b_labels[:, D_out:].bool()] = 2
+        y = y.squeeze(1).squeeze().tolist()
 
-    ex = ids_to_ex[gold_id]
-    facts = ex["facts"]
-    sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
+        ref_token_id = tokenizer.pad_token_id
+        cls_token_id = tokenizer.cls_token_id
+        sep_token_id = tokenizer.sep_token_id
+        ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
+        ref = torch.tensor([ref_input_ids], device="cuda")
 
-    lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
-    attr, delta = lig.attribute(inputs=b_input_ids,
-                                  baselines=ref,
-                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
-                                  return_convergence_delta=True,
-                                )
-    print()
-    print("article id", article_id)
-    print(attr)
-    print(delta)
-    attr_summary = summarize_attributions(attr)
-    attr_per_sentence = []
-    for i,sentence_length in enumerate(sentence_lengths):
-        attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
-        attr_summary = attr_summary[sentence_length:]
-    print(attr_per_sentence)
-    import pdb; pdb.set_trace()
+        article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
+
+        ex = ids_to_ex[gold_id]
+        facts = ex["facts"]
+        sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
+
+        lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
+        attr, delta = lig.attribute(inputs=b_input_ids,
+                                    baselines=ref,
+                                    additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
+                                    return_convergence_delta=True,
+                                    )
+        #print("article id", article_id)
+        #print(attr)
+        #print(delta)
+        attr_summary = summarize_attributions(attr)
+        attr_per_sentence = []
+        for i,sentence_length in enumerate(sentence_lengths):
+            attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
+            attr_summary = attr_summary[sentence_length:]
+        #print(attr_per_sentence)
+
+        dev_attributions_per_sentence.append(attr_per_sentence)
+        dev_rationales.append(rationale)
+
+print("ALL:")
+print(len(dev_attributions_per_sentence))
+# find pearson and spearman correlation between item_distances and item_rationales
+coef, p = spearmanr(flatten_list(dev_attributions_per_sentence), flatten_list(dev_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation between item_distances and item_rationales
+coef, p = kendalltau(flatten_list(dev_attributions_per_sentence), flatten_list(dev_rationales))
+print("kendall")
+print(coef, p)
+print("0:")
+
 
 
