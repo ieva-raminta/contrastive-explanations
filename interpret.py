@@ -17,6 +17,7 @@ import pickle
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 import json 
 from pprint import pprint
+import random 
 
 torch.manual_seed(123)
 np.random.seed(123)
@@ -108,7 +109,7 @@ def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_cl
     logits = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
     logits = logits.reshape(b_input_ids.shape[0], -1, 3)
     out = torch.argmax(logits, dim=2).squeeze(1)
-    return out
+    return out.squeeze()
 
 with open(tokenized_dir + "/tokenized_dev.pkl", "rb") as f:
             val_facts, val_masks, val_arguments, \
@@ -166,6 +167,9 @@ ids_to_ex = {}
 for id,ex in zip(ids, exs):
     ids_to_ex[id] = ex
 
+interesting_label_options = ["claimed_and_violated", "claimed_not_violated"]
+index2label = {0: "not_claimed", 1: "claimed_and_violated", 2: "claimed_not_violated"}
+
 
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
@@ -204,11 +208,14 @@ for i,item in enumerate(dev_data):
     ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
     ref = torch.tensor([ref_input_ids], device="cuda")
 
+    article_id = b_labels.index(2) if 2 in b_labels else b_labels.index(1) if 1 in b_labels else 0
+
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
                                   baselines=ref,
                                   additional_forward_args=(b_attn_mask, global_attention_mask, b_claims),
-                                  return_convergence_delta=True)
+                                  return_convergence_delta=True, 
+                                  target = article_id)
     #attr, delta = lig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
     print(attr)
     print(delta)
