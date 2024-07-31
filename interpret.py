@@ -52,6 +52,11 @@ def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_cl
     out = logits.max(1).values
     return out
 
+def summarize_attributions(attributions):
+    attributions = attributions.sum(dim=-1).squeeze(0)
+    attributions = attributions / torch.norm(attributions)
+    return attributions
+
 with open(tokenized_dir + "/tokenized_dev.pkl", "rb") as f:
             val_facts, val_masks, val_arguments, \
             val_masks_arguments, val_ids, val_claims, val_outcomes, _ = pickle.load(f)
@@ -111,10 +116,18 @@ for id,ex in zip(ids, exs):
 interesting_label_options = ["claimed_and_violated", "claimed_not_violated"]
 index2label = {0: "not_claimed", 1: "claimed_and_violated", 2: "claimed_not_violated"}
 
+ids_to_rationales = {}
+for id,rationale in zip(ids, silver_rationales):
+    ids_to_rationales[id] = rationale
+ids_to_ex = {}
+for id,ex in zip(ids, exs):
+    ids_to_ex[id] = ex
+
 
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
     claims = b_claims
+    gold_id = b_labels 
 
     D_out = int(b_labels.shape[1] / 2)
     y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
@@ -138,12 +151,26 @@ for i,item in enumerate(dev_data):
 
     article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
 
+    ex = ids_to_ex[gold_id]
+    facts = ex["facts"]
+    sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
+
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
                                   baselines=ref,
                                   additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
                                   return_convergence_delta=True,
-    )
-    
+                                )
+    print()
+    print("article id", article_id)
     print(attr)
     print(delta)
+    attr_summary = summarize_attributions(attr)
+    attr_per_sentence = []
+    for i,sentence_length in enumerate(sentence_lengths):
+        attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
+        attr_summary = attr_summary[sentence_length:]
+    print(attr_per_sentence)
+    import pdb; pdb.set_trace()
+
+
