@@ -19,6 +19,7 @@ model_path = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/results
 model = torch.load(model_path)
 MODEL_NAME="nlpaueb/legal-bert-base-uncased"
 model.eval()
+model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
 torch.manual_seed(123)
@@ -179,6 +180,7 @@ for i,item in enumerate(dev_data):
 
     preprocessed_ex, preprocessed_ex_masks = preprocessing_for_bert([facts], tokenizer, max=512)
     encoded = model(preprocessed_ex.squeeze(1).cuda(), preprocessed_ex_masks.squeeze(1).cuda(), global_attention_mask.squeeze(1), claims)[1]
+
 
 
 baseline = torch.zeros_like(encoded)
