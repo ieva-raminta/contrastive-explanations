@@ -135,10 +135,19 @@ for i,item in enumerate(dev_data):
                 gold_id = id
                 break
 
+    ex = ids_to_ex[gold_id]
+    facts = ex["facts"]
+    sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
+
     rationale = ids_to_rationales[gold_id]
 
     if rationale not in ["[]", []]: 
             
+        rationales = [int(num) for num in rationale.lstrip("[").rstrip("]").split(",")]
+        rationale_binary = [1 if num in rationales else 0 for num in range(len(facts))]
+        if any([r for r in rationales if r >= len(facts)]):
+            import pdb; pdb.set_trace()
+
         D_out = int(b_labels.shape[1] / 2)
         y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
         y[b_labels[:, :D_out].bool()] = 1
@@ -152,10 +161,6 @@ for i,item in enumerate(dev_data):
         ref = torch.tensor([ref_input_ids], device="cuda")
 
         article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
-
-        ex = ids_to_ex[gold_id]
-        facts = ex["facts"]
-        sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
 
         lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
         attr, delta = lig.attribute(inputs=b_input_ids,
@@ -174,8 +179,9 @@ for i,item in enumerate(dev_data):
         #print(attr_per_sentence)
 
         dev_attributions_per_sentence.append(attr_per_sentence)
-        dev_rationales.append(rationale)
+        dev_rationales.append(rationale_binary)
 
+import pdb; pdb.set_trace()
 print("ALL:")
 print(len(dev_attributions_per_sentence))
 # find pearson and spearman correlation between item_distances and item_rationales
