@@ -196,10 +196,19 @@ for i,item in enumerate(dev_data):
     #facts = ex["facts"]
     #preprocessed_ex, preprocessed_ex_masks = preprocessing_for_bert([facts], tokenizer, max=512)
     #encoded = model(preprocessed_ex.squeeze(1).cuda(), preprocessed_ex_masks.squeeze(1).cuda(), global_attention_mask.squeeze(1), claims)[1]
-    #baseline = torch.zeros_like(encoded)  
+    #baseline = torch.zeros_like(encoded) 
+
+    ref_token_id = tokenizer.pad_token_id
+    cls_token_id = tokenizer.cls_token_id
+    sep_token_id = tokenizer.sep_token_id
+    ref_input_ids = [cls_token_id] + [ref_token_id] * (len(b_input_ids)-2) + [sep_token_id]
+    ref = torch.tensor([ref_input_ids], device="cuda")
+
+
+    print("EXAMPLE", i)
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
-                                  baselines=y,
+                                  baselines=ref,
                                   additional_forward_args=(b_attn_mask, global_attention_mask, b_claims),
                                   return_convergence_delta=True)
     #attr, delta = lig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
