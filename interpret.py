@@ -201,11 +201,9 @@ for i,item in enumerate(dev_data):
     ref_token_id = tokenizer.pad_token_id
     cls_token_id = tokenizer.cls_token_id
     sep_token_id = tokenizer.sep_token_id
-    ref_input_ids = [cls_token_id] + [ref_token_id] * (len(b_input_ids)-2) + [sep_token_id]
+    ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
     ref = torch.tensor([ref_input_ids], device="cuda")
 
-
-    print("EXAMPLE", i)
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
                                   baselines=ref,
