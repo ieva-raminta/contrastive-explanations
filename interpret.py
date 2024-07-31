@@ -185,7 +185,7 @@ for i,item in enumerate(dev_data):
     y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
     y[b_labels[:, :D_out].bool()] = 1
     y[b_labels[:, D_out:].bool()] = 2
-    y = y.squeeze(1)
+    y = y.squeeze(1).squeeze().tolist()
 
     if ";" not in val_ids[i]:
         gold_id = val_ids[i]
@@ -208,7 +208,7 @@ for i,item in enumerate(dev_data):
     ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
     ref = torch.tensor([ref_input_ids], device="cuda")
 
-    article_id = b_labels.index(2) if 2 in b_labels else b_labels.index(1) if 1 in b_labels else 0
+    article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
 
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
