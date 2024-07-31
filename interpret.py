@@ -105,7 +105,7 @@ def predict(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=
     return logits
 
 def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=None):
-    logits, _ = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
+    logits = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
     logits = logits.reshape(b_input_ids.shape[0], -1, 3)
     out = torch.argmax(logits, dim=2).squeeze(1)
     return out
