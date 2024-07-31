@@ -200,7 +200,7 @@ for i,item in enumerate(dev_data):
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
                                   baselines=y,
-                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, 0),
+                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims),
                                   return_convergence_delta=True)
     #attr, delta = lig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
     print(attr)
