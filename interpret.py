@@ -30,66 +30,6 @@ model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/legal_bert"
 
-def text_preprocessing(text):
-    """
-    - Remove entity mentions (eg. '@united')
-    - Correct errors (eg. '&amp;' to '&')
-    @param    text (str): a string to be processed.
-    @return   text (Str): the processed string.
-    """
-    # Remove '@name'
-    text = re.sub(r'(@.*?)[\s]', ' ', text)
-
-    # Replace '&amp;' with '&'
-    text = re.sub(r'&amp;', '&', text)
-
-    # Remove trailing whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-
-    return text
-
-def preprocessing_for_bert(data, tokenizer, max=512):
-    """Perform required preprocessing steps for pretrained BERT.
-    @param    data (np.array): Array of texts to be processed.
-    @return   input_ids (torch.Tensor): Tensor of token ids to be fed to a model.
-    @return   attention_masks (torch.Tensor): Tensor of indices specifying which
-                  tokens should be attended to by the model.
-    """
-
-    # For every sentence...
-    input_ids = []
-    attention_masks = []
-
-    for sent in data:
-        sent = " ".join(sent)
-        sent = sent[:500000] # Speeds the process up for documents with a lot of precedent we would truncate anyway.
-        # `encode_plus` will:
-        #    (1) Tokenize the sentence
-        #    (2) Add the `[CLS]` and `[SEP]` token to the start and end
-        #    (3) Truncate/Pad sentence to max length
-        #    (4) Map tokens to their IDs
-        #    (5) Create attention mask
-        #    (6) Return a dictionary of outputs
-        encoded_sent = tokenizer.encode_plus(
-            text=text_preprocessing(sent),  # Preprocess sentence
-            add_special_tokens=True,  # Add `[CLS]` and `[SEP]`
-            max_length=max,  # Max length to truncate/pad
-            pad_to_max_length=True,  # Pad sentence to max length
-            # return_tensors='pt',           # Return PyTorch tensor
-            return_attention_mask=True,  # Return attention mask
-            truncation=True,
-        )
-
-        # Add the outputs to the lists
-        input_ids.append([encoded_sent.get('input_ids')])
-        attention_masks.append([encoded_sent.get('attention_mask')])
-
-    # Convert lists to tensors
-    input_ids = torch.tensor(input_ids)
-    attention_masks = torch.tensor(attention_masks)
-
-    return input_ids, attention_masks
-
 def make_loader(input, mask, labels, claims, train=True):
     labels = torch.tensor(labels)
     claims = torch.tensor(claims)
@@ -105,11 +45,12 @@ def predict(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=
     logits, _ = model(b_input_ids.cuda(), b_attn_mask.cuda(), global_attention_mask, b_claims) #predictor.predict_json(e)
     return logits
 
-def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=None):
+def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=None, article_id=0):
     logits = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
     logits = logits.reshape(b_input_ids.shape[0], -1, 3)
-    out = torch.argmax(logits, dim=2).squeeze(1)
-    return out.squeeze()
+    logits = logits[:,article_id,:]
+    out = logits.max(1).values
+    return out
 
 with open(tokenized_dir + "/tokenized_dev.pkl", "rb") as f:
             val_facts, val_masks, val_arguments, \
@@ -175,12 +116,6 @@ for i,item in enumerate(dev_data):
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
     claims = b_claims
 
-    """
-    logits, last_hidden_state_cls = model(b_input_ids.cuda(), b_attn_mask.cuda(), global_attention_mask, b_claims) #predictor.predict_json(e)
-    logits = logits.reshape(b_input_ids.shape[0], -1, 3)
-    gold = b_labels
-    out = torch.argmax(logits, dim=2).squeeze(1)
-    """
     D_out = int(b_labels.shape[1] / 2)
     y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
     y[b_labels[:, :D_out].bool()] = 1
@@ -195,13 +130,6 @@ for i,item in enumerate(dev_data):
                 gold_id = id
                 break
 
-    #silver_rat = ids_to_rationales[gold_id]
-    #ex = ids_to_ex[gold_id]
-    #facts = ex["facts"]
-    #preprocessed_ex, preprocessed_ex_masks = preprocessing_for_bert([facts], tokenizer, max=512)
-    #encoded = model(preprocessed_ex.squeeze(1).cuda(), preprocessed_ex_masks.squeeze(1).cuda(), global_attention_mask.squeeze(1), claims)[1]
-    #baseline = torch.zeros_like(encoded) 
-
     ref_token_id = tokenizer.pad_token_id
     cls_token_id = tokenizer.cls_token_id
     sep_token_id = tokenizer.sep_token_id
@@ -213,9 +141,9 @@ for i,item in enumerate(dev_data):
     lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
     attr, delta = lig.attribute(inputs=b_input_ids,
                                   baselines=ref,
-                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims),
-                                  return_convergence_delta=True, 
-                                  target = article_id)
-    #attr, delta = lig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
+                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
+                                  return_convergence_delta=True,
+    )
+    
     print(attr)
     print(delta)
