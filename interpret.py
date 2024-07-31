@@ -8,12 +8,18 @@ from captum.attr import (
     LayerConductance,
     NeuronConductance,
     NoiseTunnel,
+    LayerConductance, 
+    LayerIntegratedGradients,
 )
 import numpy as np
 from transformers import AutoTokenizer, AdamW, get_linear_schedule_with_warmup, BertModel, AutoModel, LongformerModel
 import pickle
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 import json 
+from pprint import pprint
+
+torch.manual_seed(123)
+np.random.seed(123)
 
 model_path = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/results/Outcome/joint_model/legal_bert/facts/ccc660d6049c4d1782bc6c81f2f30b12/model.pt"
 model = torch.load(model_path)
@@ -21,9 +27,7 @@ MODEL_NAME="nlpaueb/legal-bert-base-uncased"
 model.eval()
 model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-
-torch.manual_seed(123)
-np.random.seed(123)
+tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/legal_bert"
 
 def text_preprocessing(text):
     """
@@ -85,8 +89,6 @@ def preprocessing_for_bert(data, tokenizer, max=512):
 
     return input_ids, attention_masks
 
-tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/legal_bert"
-
 def make_loader(input, mask, labels, claims, train=True):
     labels = torch.tensor(labels)
     claims = torch.tensor(claims)
@@ -97,6 +99,16 @@ def make_loader(input, mask, labels, claims, train=True):
         sampler = SequentialSampler(data)
     dataloader = DataLoader(data, sampler=sampler, batch_size=1)
     return dataloader
+
+def predict(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=None):
+    logits, _ = model(b_input_ids.cuda(), b_attn_mask.cuda(), global_attention_mask, b_claims) #predictor.predict_json(e)
+    return logits
+
+def forward_func(b_input_ids, b_attn_mask=None, global_attention_mask=None, b_claims=None):
+    logits, _ = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
+    logits = logits.reshape(b_input_ids.shape[0], -1, 3)
+    out = torch.argmax(logits, dim=2).squeeze(1)
+    return out
 
 with open(tokenized_dir + "/tokenized_dev.pkl", "rb") as f:
             val_facts, val_masks, val_arguments, \
@@ -157,16 +169,20 @@ for id,ex in zip(ids, exs):
 
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
+    claims = b_claims
+
+    """
     logits, last_hidden_state_cls = model(b_input_ids.cuda(), b_attn_mask.cuda(), global_attention_mask, b_claims) #predictor.predict_json(e)
     logits = logits.reshape(b_input_ids.shape[0], -1, 3)
-    claims = b_claims
     gold = b_labels
+    out = torch.argmax(logits, dim=2).squeeze(1)
+    """
     D_out = int(b_labels.shape[1] / 2)
     y = torch.zeros(b_labels.shape[0], D_out).long().to("cuda")
     y[b_labels[:, :D_out].bool()] = 1
     y[b_labels[:, D_out:].bool()] = 2
     y = y.squeeze(1)
-    out = torch.argmax(logits, dim=2).squeeze(1)
+
     if ";" not in val_ids[i]:
         gold_id = val_ids[i]
     else:
@@ -174,18 +190,18 @@ for i,item in enumerate(dev_data):
             if id in ids:
                 gold_id = id
                 break
-    silver_rat = ids_to_rationales[gold_id]
-    ex = ids_to_ex[gold_id]
-    facts = ex["facts"]
 
-    preprocessed_ex, preprocessed_ex_masks = preprocessing_for_bert([facts], tokenizer, max=512)
-    encoded = model(preprocessed_ex.squeeze(1).cuda(), preprocessed_ex_masks.squeeze(1).cuda(), global_attention_mask.squeeze(1), claims)[1]
-
-
-
-baseline = torch.zeros_like(encoded)
-
-ig = IntegratedGradients(model)
-attr, delta = ig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
-print(attr)
-print(delta)
+    #silver_rat = ids_to_rationales[gold_id]
+    #ex = ids_to_ex[gold_id]
+    #facts = ex["facts"]
+    #preprocessed_ex, preprocessed_ex_masks = preprocessing_for_bert([facts], tokenizer, max=512)
+    #encoded = model(preprocessed_ex.squeeze(1).cuda(), preprocessed_ex_masks.squeeze(1).cuda(), global_attention_mask.squeeze(1), claims)[1]
+    #baseline = torch.zeros_like(encoded)  
+    lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
+    attr, delta = lig.attribute(inputs=b_input_ids,
+                                  baselines=y,
+                                  additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, 0),
+                                  return_convergence_delta=True)
+    #attr, delta = lig.attribute(inputs=encoded, baselines=baseline, return_convergence_delta=True)
+    print(attr)
+    print(delta)
