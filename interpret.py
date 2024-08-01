@@ -98,6 +98,20 @@ for step, batch in enumerate(val_dataloader):
     global_attention_mask[:, [0]] = 1
     dev_data.append([b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask])
 
+train_gold_rationales = []
+with open("/home/irs38/contrastive-explanations/data/ecthr/outcome/train_gold_rationales.txt", "r") as f:
+    for line in f:
+        train_gold_rationales.append(line.strip())
+dev_gold_rationales = []
+with open("/home/irs38/contrastive-explanations/data/ecthr/outcome/dev_gold_rationales.txt", "r") as f:
+    for line in f:
+        dev_gold_rationales.append(line.strip())
+test_gold_rationales = []
+with open("/home/irs38/contrastive-explanations/data/ecthr/outcome/test_gold_rationales.txt", "r") as f:
+    for line in f:
+        test_gold_rationales.append(line.strip())
+gold_rationales = train_gold_rationales + dev_gold_rationales + test_gold_rationales
+
 train_silver_rationales = []
 with open("/home/irs38/contrastive-explanations/data/ecthr/outcome/train_silver_rationales.txt", "r") as f:
     for line in f:
@@ -118,6 +132,9 @@ for id,rationale in zip(ids, silver_rationales):
 ids_to_ex = {}
 for id,ex in zip(ids, exs):
     ids_to_ex[id] = ex
+ids_to_gold_rationales = {}
+for id,rationale in zip(ids, gold_rationales):
+    ids_to_gold_rationales[id] = rationale
 
 interesting_label_options = ["claimed_and_violated", "claimed_not_violated"]
 index2label = {0: "not_claimed", 1: "claimed_and_violated", 2: "claimed_not_violated"}
@@ -140,7 +157,7 @@ for i,item in enumerate(dev_data):
     facts = ex["facts"]
     sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
 
-    rationale = ids_to_rationales[gold_id]
+    rationale = ids_to_gold_rationales[gold_id]
 
     if rationale not in ["[]", []]: 
             
