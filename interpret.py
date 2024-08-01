@@ -149,6 +149,13 @@ correct_rationales = []
 neutral_rationales = []
 positive_rationales = []
 negative_rationales = []
+neutral_correct_dev_attributions_per_sentence = []
+positive_correct_dev_attributions_per_sentence = []
+negative_correct_dev_attributions_per_sentence = []
+neutral_correct_rationales = []
+positive_correct_rationales = []
+negative_correct_rationales = []
+
 
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
@@ -199,15 +206,12 @@ for i,item in enumerate(dev_data):
                                     additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
                                     return_convergence_delta=True,
                                     )
-        #print("article id", article_id)
-        #print(attr)
-        #print(delta)
+        
         attr_summary = summarize_attributions(attr)
         attr_per_sentence = []
         for i,sentence_length in enumerate(sentence_lengths):
             attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
             attr_summary = attr_summary[sentence_length:]
-        #print(attr_per_sentence)
 
         dev_attributions_per_sentence.append(attr_per_sentence)
         dev_rationales.append(rationale_binary)
@@ -215,6 +219,15 @@ for i,item in enumerate(dev_data):
         if y[article_id]==out[article_id]: 
             correct_dev_attributions_per_sentence.append(attr_per_sentence)
             correct_rationales.append(rationale_binary)
+            if y[article_id] == 0: 
+                neutral_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                neutral_correct_rationales.append(rationale_binary)
+            elif y[article_id] == 1:
+                positive_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                positive_correct_rationales.append(rationale_binary)
+            elif y[article_id] == 2:
+                negative_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                negative_correct_rationales.append(rationale_binary)
         if y[article_id] == 0: 
             neutral_dev_attributions_per_sentence.append(attr_per_sentence)
             neutral_rationales.append(rationale_binary)
@@ -225,12 +238,6 @@ for i,item in enumerate(dev_data):
             negative_dev_attributions_per_sentence.append(attr_per_sentence)
             negative_rationales.append(rationale_binary)
 
-neutral_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in neutral_dev_attributions_per_sentence]
-positive_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in positive_dev_attributions_per_sentence]
-negative_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in negative_dev_attributions_per_sentence]
-negative_correct_rationales = [item for item in correct_rationales if item in negative_rationales]
-positive_correct_rationales = [item for item in correct_rationales if item in positive_rationales]
-neutral_correct_rationales = [item for item in correct_rationales if item in neutral_rationales]
 
 print("ALL:")
 print(len(dev_attributions_per_sentence))
