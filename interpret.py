@@ -24,13 +24,14 @@ from scipy.stats import kendalltau
 torch.manual_seed(123)
 np.random.seed(123)
 
-model_path = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/results/Outcome/joint_model/legal_bert/facts/ccc660d6049c4d1782bc6c81f2f30b12/model.pt"
+model_directory_path = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/results/Outcome/joint_model/longformer/facts/be7001606980465a883b6119ced5fb0d/"
+model_path = model_directory_path+"model.pt"
 model = torch.load(model_path)
 MODEL_NAME="nlpaueb/legal-bert-base-uncased"
 model.eval()
 model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/legal_bert"
+tokenized_dir = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/ECHR/Outcome/longformer"
 
 def flatten_list(l):
     return [item for sublist in l for item in sublist]
