@@ -27,7 +27,7 @@ np.random.seed(123)
 model_directory_path = "/home/irs38/Negative-Precedent-in-Legal-Outcome-Prediction/results/Outcome/joint_model/longformer/facts/be7001606980465a883b6119ced5fb0d/"
 model_path = model_directory_path+"model.pt"
 model = torch.load(model_path)
-MODEL_NAME="nlpaueb/legal-bert-base-uncased"
+MODEL_NAME="allenai/longformer-base-4096"
 model.eval()
 model.zero_grad()
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
