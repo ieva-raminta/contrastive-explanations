@@ -141,6 +141,15 @@ index2label = {0: "not_claimed", 1: "claimed_and_violated", 2: "claimed_not_viol
 
 dev_rationales = []
 dev_attributions_per_sentence = []
+correct_dev_attributions_per_sentence = []
+neutral_dev_attributions_per_sentence = []
+positive_dev_attributions_per_sentence = []
+negative_dev_attributions_per_sentence = []
+correct_rationales = []
+neutral_rationales = []
+positive_rationales = []
+negative_rationales = []
+
 for i,item in enumerate(dev_data): 
     b_input_ids, b_attn_mask, b_labels, b_claims, global_attention_mask = item
     claims = b_claims
@@ -157,7 +166,7 @@ for i,item in enumerate(dev_data):
     facts = ex["facts"]
     sentence_lengths = [len(tokenizer.tokenize(sentence)) for sentence in facts]
 
-    rationale = ids_to_gold_rationales[gold_id]
+    rationale = ids_to_rationales[gold_id] # flag for silver vs gold rationales
 
     if rationale not in ["[]", []]: 
             
@@ -171,6 +180,10 @@ for i,item in enumerate(dev_data):
         y[b_labels[:, :D_out].bool()] = 1
         y[b_labels[:, D_out:].bool()] = 2
         y = y.squeeze(1).squeeze().tolist()
+
+        logits = predict(b_input_ids, b_attn_mask, global_attention_mask, b_claims)
+        logits = logits.reshape(b_input_ids.shape[0], -1, 3)
+        out = torch.argmax(logits, dim=2).squeeze(1).squeeze().tolist()
 
         ref_token_id = tokenizer.pad_token_id
         cls_token_id = tokenizer.cls_token_id
@@ -199,7 +212,26 @@ for i,item in enumerate(dev_data):
         dev_attributions_per_sentence.append(attr_per_sentence)
         dev_rationales.append(rationale_binary)
 
-import pdb; pdb.set_trace()
+        if y[article_id]==out[article_id]: 
+            correct_dev_attributions_per_sentence.append(attr_per_sentence)
+            correct_rationales.append(rationale_binary)
+        if y[article_id] == 0: 
+            neutral_dev_attributions_per_sentence.append(attr_per_sentence)
+            neutral_rationales.append(rationale_binary)
+        elif y[article_id] == 1:
+            positive_dev_attributions_per_sentence.append(attr_per_sentence)
+            positive_rationales.append(rationale_binary)
+        elif y[article_id] == 2:
+            negative_dev_attributions_per_sentence.append(attr_per_sentence)
+            negative_rationales.append(rationale_binary)
+
+neutral_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in neutral_dev_attributions_per_sentence]
+positive_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in positive_dev_attributions_per_sentence]
+negative_correct_dev_attributions_per_sentence = [item for item in correct_dev_attributions_per_sentence if item in negative_dev_attributions_per_sentence]
+negative_correct_rationales = [item for item in correct_rationales if item in negative_rationales]
+positive_correct_rationales = [item for item in correct_rationales if item in positive_rationales]
+neutral_correct_rationales = [item for item in correct_rationales if item in neutral_rationales]
+
 print("ALL:")
 print(len(dev_attributions_per_sentence))
 # find pearson and spearman correlation between item_distances and item_rationales
@@ -211,6 +243,79 @@ coef, p = kendalltau(flatten_list(dev_attributions_per_sentence), flatten_list(d
 print("kendall")
 print(coef, p)
 print("0:")
+
+print("NEUTRAL:")
+print(len(neutral_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(neutral_dev_attributions_per_sentence), flatten_list(neutral_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(neutral_dev_attributions_per_sentence), flatten_list(neutral_rationales))
+print("kendall")
+print(coef, p)
+print("POSITIVE:")
+print(len(positive_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(positive_dev_attributions_per_sentence), flatten_list(positive_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(positive_dev_attributions_per_sentence), flatten_list(positive_rationales))
+print("kendall")
+print(coef, p)
+print("NEGATIVE:")
+print(len(negative_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(negative_dev_attributions_per_sentence), flatten_list(negative_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(negative_dev_attributions_per_sentence), flatten_list(negative_rationales))
+print("kendall")
+print(coef, p)
+
+print("CORRECT:")
+print(len(correct_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(correct_dev_attributions_per_sentence), flatten_list(correct_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(correct_dev_attributions_per_sentence), flatten_list(correct_rationales))
+print("kendall")
+print(coef, p)
+print("NEUTRAL CORRECT:")
+print(len(neutral_correct_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(neutral_correct_dev_attributions_per_sentence), flatten_list(neutral_correct_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(neutral_correct_dev_attributions_per_sentence), flatten_list(neutral_correct_rationales))
+print("kendall")
+print(coef, p)
+print("POSITIVE CORRECT:")
+print(len(positive_correct_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(positive_correct_dev_attributions_per_sentence), flatten_list(positive_correct_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(positive_correct_dev_attributions_per_sentence), flatten_list(positive_correct_rationales))
+print("kendall")
+print(coef, p)
+print("NEGATIVE CORRECT:")
+print(len(negative_correct_dev_attributions_per_sentence))
+# find pearson and spearman correlation
+coef, p = spearmanr(flatten_list(negative_correct_dev_attributions_per_sentence), flatten_list(negative_correct_rationales))
+print("spearman")
+print(coef, p)
+# calculate kendall correlation
+coef, p = kendalltau(flatten_list(negative_correct_dev_attributions_per_sentence), flatten_list(negative_correct_rationales))
+print("kendall")
+print(coef, p)
+import pdb; pdb.set_trace()
 
 
 
