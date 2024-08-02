@@ -198,47 +198,50 @@ for i,item in enumerate(dev_data):
         ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
         ref = torch.tensor([ref_input_ids], device="cuda")
 
-        #article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
-        article_id = y.index(2) if 2 in y else random.choice([i for i in range(len(out)) if index2label[out[i]] in interesting_label_options or index2label[y[i]] in interesting_label_options])
+        for label in [0,1,2]:
 
+            if label in out: 
+                article_id = out.index(label)
+                #article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
+                #article_id = y.index(2) if 2 in y else random.choice([i for i in range(len(out)) if index2label[out[i]] in interesting_label_options or index2label[y[i]] in interesting_label_options])
 
-        lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
-        attr, delta = lig.attribute(inputs=b_input_ids,
-                                    baselines=ref,
-                                    additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
-                                    return_convergence_delta=True,
-                                    )
-        
-        attr_summary = summarize_attributions(attr)
-        attr_per_sentence = []
-        for i,sentence_length in enumerate(sentence_lengths):
-            attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
-            attr_summary = attr_summary[sentence_length:]
+                lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
+                attr, delta = lig.attribute(inputs=b_input_ids,
+                                            baselines=ref,
+                                            additional_forward_args=(b_attn_mask, global_attention_mask, b_claims, article_id),
+                                            return_convergence_delta=True,
+                                            )
+                
+                attr_summary = summarize_attributions(attr)
+                attr_per_sentence = []
+                for i,sentence_length in enumerate(sentence_lengths):
+                    attr_per_sentence.append(attr_summary[:sentence_length].sum().item())
+                    attr_summary = attr_summary[sentence_length:]
 
-        dev_attributions_per_sentence.append(attr_per_sentence)
-        dev_rationales.append(rationale_binary)
+                dev_attributions_per_sentence.append(attr_per_sentence)
+                dev_rationales.append(rationale_binary)
 
-        if y[article_id]==out[article_id]: 
-            correct_dev_attributions_per_sentence.append(attr_per_sentence)
-            correct_rationales.append(rationale_binary)
-            if y[article_id] == 0: 
-                neutral_correct_dev_attributions_per_sentence.append(attr_per_sentence)
-                neutral_correct_rationales.append(rationale_binary)
-            elif y[article_id] == 1:
-                positive_correct_dev_attributions_per_sentence.append(attr_per_sentence)
-                positive_correct_rationales.append(rationale_binary)
-            elif y[article_id] == 2:
-                negative_correct_dev_attributions_per_sentence.append(attr_per_sentence)
-                negative_correct_rationales.append(rationale_binary)
-        if y[article_id] == 0: 
-            neutral_dev_attributions_per_sentence.append(attr_per_sentence)
-            neutral_rationales.append(rationale_binary)
-        elif y[article_id] == 1:
-            positive_dev_attributions_per_sentence.append(attr_per_sentence)
-            positive_rationales.append(rationale_binary)
-        elif y[article_id] == 2:
-            negative_dev_attributions_per_sentence.append(attr_per_sentence)
-            negative_rationales.append(rationale_binary)
+                if y[article_id]==out[article_id]: 
+                    correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                    correct_rationales.append(rationale_binary)
+                    if y[article_id] == 0: 
+                        neutral_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                        neutral_correct_rationales.append(rationale_binary)
+                    elif y[article_id] == 1:
+                        positive_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                        positive_correct_rationales.append(rationale_binary)
+                    elif y[article_id] == 2:
+                        negative_correct_dev_attributions_per_sentence.append(attr_per_sentence)
+                        negative_correct_rationales.append(rationale_binary)
+                if y[article_id] == 0: 
+                    neutral_dev_attributions_per_sentence.append(attr_per_sentence)
+                    neutral_rationales.append(rationale_binary)
+                elif y[article_id] == 1:
+                    positive_dev_attributions_per_sentence.append(attr_per_sentence)
+                    positive_rationales.append(rationale_binary)
+                elif y[article_id] == 2:
+                    negative_dev_attributions_per_sentence.append(attr_per_sentence)
+                    negative_rationales.append(rationale_binary)
 
 
 print("ALL:")
