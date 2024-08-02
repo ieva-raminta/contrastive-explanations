@@ -198,7 +198,9 @@ for i,item in enumerate(dev_data):
         ref_input_ids = [cls_token_id] + [ref_token_id] * (b_input_ids.shape[-1]-2) + [sep_token_id]
         ref = torch.tensor([ref_input_ids], device="cuda")
 
-        article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
+        #article_id = y.index(2) if 2 in y else y.index(1) if 1 in y else 0
+        article_id = y.index(2) if 2 in y else random.choice([i for i in range(len(out)) if index2label[out[i]] in interesting_label_options or index2label[y[i]] in interesting_label_options])
+
 
         lig = LayerIntegratedGradients(forward_func, model._modules["model"].embeddings)
         attr, delta = lig.attribute(inputs=b_input_ids,
