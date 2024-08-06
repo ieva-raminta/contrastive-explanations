@@ -243,6 +243,8 @@ for i,item in enumerate(dev_data):
                     negative_dev_attributions_per_sentence.append(attr_per_sentence)
                     negative_rationales.append(rationale_binary)
 
+                import pdb; pdb.set_trace()
+
 
 print("ALL:")
 print(len(dev_attributions_per_sentence))
